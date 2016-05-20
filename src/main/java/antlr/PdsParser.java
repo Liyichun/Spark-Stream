@@ -1,12 +1,12 @@
 package antlr;// Generated from /Users/cynric/workspaces/antlr/pds/pds/src/Pds.g4 by ANTLR 4.5.1
-
-import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.dfa.DFA;
+import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.misc.*;
 import org.antlr.v4.runtime.tree.*;
-
 import java.util.List;
+import java.util.Iterator;
+import java.util.ArrayList;
 
 @SuppressWarnings({"all", "warnings", "unchecked", "unused", "cast"})
 public class PdsParser extends Parser {
@@ -361,22 +361,14 @@ public class PdsParser extends Parser {
 	public final StackContext stack() throws RecognitionException {
 		StackContext _localctx = new StackContext(_ctx, getState());
 		enterRule(_localctx, 10, RULE_stack);
-		int _la;
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
 			setState(34);
 			match(T__2);
+			setState(35);
+			stack_content();
 			setState(36);
-			_la = _input.LA(1);
-			if (_la==GAMMA) {
-				{
-				setState(35);
-				stack_content();
-				}
-			}
-
-			setState(38);
 			match(T__3);
 			}
 		}
@@ -420,21 +412,33 @@ public class PdsParser extends Parser {
 		enterRule(_localctx, 12, RULE_stack_content);
 		int _la;
 		try {
-			enterOuterAlt(_localctx, 1);
-			{
-			{
-			setState(40);
-			match(GAMMA);
-			}
-			setState(42);
-			_la = _input.LA(1);
-			if (_la==GAMMA) {
+			setState(43);
+			switch (_input.LA(1)) {
+			case T__3:
+				enterOuterAlt(_localctx, 1);
 				{
-				setState(41);
+				}
+				break;
+			case GAMMA:
+				enterOuterAlt(_localctx, 2);
+				{
+				{
+				setState(39);
 				match(GAMMA);
 				}
-			}
+				setState(41);
+				_la = _input.LA(1);
+				if (_la==GAMMA) {
+					{
+					setState(40);
+					match(GAMMA);
+					}
+				}
 
+				}
+				break;
+			default:
+				throw new NoViableAltException(this);
 			}
 		}
 		catch (RecognitionException re) {
@@ -449,18 +453,18 @@ public class PdsParser extends Parser {
 	}
 
 	public static final String _serializedATN =
-		"\3\u0430\ud6d1\u8206\uad2d\u4417\uaef1\u8d80\uaadd\3\13/\4\2\t\2\4\3\t"+
-		"\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\4\b\t\b\3\2\3\2\3\2\3\3\3\3\3\3\3\3"+
-		"\3\4\7\4\31\n\4\f\4\16\4\34\13\4\3\5\3\5\3\5\3\5\3\6\3\6\3\6\3\7\3\7\5"+
-		"\7\'\n\7\3\7\3\7\3\b\3\b\5\b-\n\b\3\b\2\2\t\2\4\6\b\n\f\16\2\2*\2\20\3"+
-		"\2\2\2\4\23\3\2\2\2\6\32\3\2\2\2\b\35\3\2\2\2\n!\3\2\2\2\f$\3\2\2\2\16"+
-		"*\3\2\2\2\20\21\5\4\3\2\21\22\5\6\4\2\22\3\3\2\2\2\23\24\7\3\2\2\24\25"+
-		"\5\n\6\2\25\26\7\4\2\2\26\5\3\2\2\2\27\31\5\b\5\2\30\27\3\2\2\2\31\34"+
-		"\3\2\2\2\32\30\3\2\2\2\32\33\3\2\2\2\33\7\3\2\2\2\34\32\3\2\2\2\35\36"+
-		"\5\n\6\2\36\37\7\b\2\2\37 \5\n\6\2 \t\3\2\2\2!\"\7\n\2\2\"#\5\f\7\2#\13"+
-		"\3\2\2\2$&\7\5\2\2%\'\5\16\b\2&%\3\2\2\2&\'\3\2\2\2\'(\3\2\2\2()\7\6\2"+
-		"\2)\r\3\2\2\2*,\7\7\2\2+-\7\7\2\2,+\3\2\2\2,-\3\2\2\2-\17\3\2\2\2\5\32"+
-		"&,";
+		"\3\u0430\ud6d1\u8206\uad2d\u4417\uaef1\u8d80\uaadd\3\13\60\4\2\t\2\4\3"+
+		"\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\4\b\t\b\3\2\3\2\3\2\3\3\3\3\3\3\3"+
+		"\3\3\4\7\4\31\n\4\f\4\16\4\34\13\4\3\5\3\5\3\5\3\5\3\6\3\6\3\6\3\7\3\7"+
+		"\3\7\3\7\3\b\3\b\3\b\5\b,\n\b\5\b.\n\b\3\b\2\2\t\2\4\6\b\n\f\16\2\2+\2"+
+		"\20\3\2\2\2\4\23\3\2\2\2\6\32\3\2\2\2\b\35\3\2\2\2\n!\3\2\2\2\f$\3\2\2"+
+		"\2\16-\3\2\2\2\20\21\5\4\3\2\21\22\5\6\4\2\22\3\3\2\2\2\23\24\7\3\2\2"+
+		"\24\25\5\n\6\2\25\26\7\4\2\2\26\5\3\2\2\2\27\31\5\b\5\2\30\27\3\2\2\2"+
+		"\31\34\3\2\2\2\32\30\3\2\2\2\32\33\3\2\2\2\33\7\3\2\2\2\34\32\3\2\2\2"+
+		"\35\36\5\n\6\2\36\37\7\b\2\2\37 \5\n\6\2 \t\3\2\2\2!\"\7\n\2\2\"#\5\f"+
+		"\7\2#\13\3\2\2\2$%\7\5\2\2%&\5\16\b\2&\'\7\6\2\2\'\r\3\2\2\2(.\3\2\2\2"+
+		")+\7\7\2\2*,\7\7\2\2+*\3\2\2\2+,\3\2\2\2,.\3\2\2\2-(\3\2\2\2-)\3\2\2\2"+
+		".\17\3\2\2\2\5\32+-";
 	public static final ATN _ATN =
 		new ATNDeserializer().deserialize(_serializedATN.toCharArray());
 	static {

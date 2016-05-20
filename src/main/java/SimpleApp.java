@@ -25,9 +25,14 @@ public class SimpleApp {
 
         System.out.println(ruleSet.size());
 //        String logFile = "/Users/cynric/Downloads/spark-1.6.1/README.md"; // Should be some file on your system
-//        SparkConf conf = new SparkConf().setAppName("Simple Application");
-//        JavaSparkContext sc = new JavaSparkContext(conf);
+        SparkConf conf = new SparkConf().setAppName("Simple Application");
+        JavaSparkContext sc = new JavaSparkContext(conf);
 //        JavaRDD<String> logData = sc.textFile(logFile).cache();
+        JavaRDD<TransRule> distData = sc.parallelize(ruleSet);
+
+
+
+
 //
 //        long numAs = logData.filter(new Function<String, Boolean>() {
 //            public Boolean call(String s) {
