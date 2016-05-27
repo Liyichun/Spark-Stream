@@ -2,12 +2,13 @@ package pds;
 
 import antlr.PdsParser;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
  * Created by Cynric on 5/18/16.
  */
-public class Configuration {
+public class Configuration implements Serializable{
     State state;
     List<StackElement> stackElements;
 
@@ -27,5 +28,21 @@ public class Configuration {
         List<StackElement> stackElements = StackElement.fromStackContext((PdsParser.StackContext) confContext.getChild(1));
 
         return new Configuration(s, stackElements);
+    }
+
+    public State getState() {
+        return state;
+    }
+
+    public void setState(State state) {
+        this.state = state;
+    }
+
+    public List<StackElement> getStackElements() {
+        return stackElements;
+    }
+
+    public void setStackElements(List<StackElement> stackElements) {
+        this.stackElements = stackElements;
     }
 }

@@ -2,16 +2,25 @@ package pds;
 
 import antlr.PdsParser;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Created by Cynric on 5/18/16.
  */
-public class StackElement {
-    String omega = null;
+public class StackElement implements Serializable {
+    private String omega = null;
 
     public StackElement(String omega) {
+        this.omega = omega;
+    }
+
+    public String getOmega() {
+        return omega;
+    }
+
+    public void setOmega(String omega) {
         this.omega = omega;
     }
 

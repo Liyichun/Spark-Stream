@@ -30,7 +30,7 @@ public class PdsBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements Pd
      */
     @Override
     public T visitPds(PdsParser.PdsContext ctx) {
-        System.out.println("Pds: " + ctx.getText());
+//        System.out.println("Pds: " + ctx.getText());
         return visitChildren(ctx);
     }
 
@@ -42,7 +42,7 @@ public class PdsBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements Pd
      */
     @Override
     public T visitStart(PdsParser.StartContext ctx) {
-        System.out.println("start: " + ctx.getText());
+//        System.out.println("start: " + ctx.getText());
         return visitChildren(ctx);
     }
 
@@ -54,7 +54,7 @@ public class PdsBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements Pd
      */
     @Override
     public T visitRules(PdsParser.RulesContext ctx) {
-        System.out.println("rule set: " + ctx.getText());
+//        System.out.println("rule set: " + ctx.getText());
         return visitChildren(ctx);
     }
 
@@ -66,7 +66,7 @@ public class PdsBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements Pd
      */
     @Override
     public T visitTrans_rule(PdsParser.Trans_ruleContext ctx) {
-        System.out.println("single rule: " + ctx.getText());
+//        System.out.println("single rule: " + ctx.getText());
 
         ruleSet.add(TransRule.fromTransContext(ctx));
         return visitChildren(ctx);

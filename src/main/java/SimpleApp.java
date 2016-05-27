@@ -6,50 +6,51 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.apache.spark.api.java.*;
 import org.apache.spark.SparkConf;
-import org.apache.spark.api.java.function.Function;
+import org.apache.spark.broadcast.Broadcast;
 import pds.TransRule;
+import pds.Transition;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by Cynric on 5/17/16.
  */
 public class SimpleApp {
-    static List<TransRule> ruleSet = new ArrayList<TransRule>();
 
     public static void main(String[] args) {
 
-        parseInputFile("example/plot.pds");
+        List<TransRule> ruleSet = parseInputFile("example/plot.pds");
 
-        System.out.println(ruleSet.size());
-//        String logFile = "/Users/cynric/Downloads/spark-1.6.1/README.md"; // Should be some file on your system
         SparkConf conf = new SparkConf().setAppName("Simple Application");
         JavaSparkContext sc = new JavaSparkContext(conf);
-//        JavaRDD<String> logData = sc.textFile(logFile).cache();
+
+//        JavaRDD<String> lines = sc.textFile("example/plot.pds").cache();
+//        long length = lines.count();
+//        Util.log(String.valueOf(length));
+//        Util.log(lines.toString());
+
         JavaRDD<TransRule> distData = sc.parallelize(ruleSet);
 
+        Broadcast<Set<Transition>> bcTrans = sc.broadcast(new HashSet<>());
+
+        distData.foreach(transRule -> {
+            // find all <p, r> -> <p', e>
+            if (transRule.getEndConf().getStackElements().size() == 0) {
+                Transition transition = transRule.toTransition();
+                bcTrans.getValue().add(transition);
+            }
+        });
 
 
+        Util.log(bcTrans.value().size());
 
-//
-//        long numAs = logData.filter(new Function<String, Boolean>() {
-//            public Boolean call(String s) {
-//                return s.contains("a");
-//            }
-//        }).count();
-//
-//        long numBs = logData.filter(new Function<String, Boolean>() {
-//            public Boolean call(String s) {
-//                return s.contains("b");
-//            }
-//        }).count();
-//
-//        System.out.println("Lines with a: " + numAs + ", lines with b: " + numBs);
+
     }
 
-    private static void parseInputFile(String filename) {
+    private static List parseInputFile(String filename) {
+        List<TransRule> ruleSet = new ArrayList<TransRule>();
+
         ANTLRFileStream input = null;
         try {
             input = new ANTLRFileStream(filename);
@@ -68,5 +69,6 @@ public class SimpleApp {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return ruleSet;
     }
 }
