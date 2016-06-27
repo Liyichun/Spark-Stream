@@ -3,46 +3,61 @@ package pds;
 import antlr.PdsParser;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Created by Cynric on 5/18/16.
  */
-public class Configuration implements Serializable{
-    State state;
-    List<StackElement> stackElements;
+public class Configuration implements Serializable {
+    String state;
+    List<String> stackElements;
 
-    public Configuration(State state, StackElement stackElement1, StackElement stackElement2) {
+    public Configuration(String state, String stackElement1, String stackElement2) {
         this.state = state;
         this.stackElements.add(stackElement1);
         this.stackElements.add(stackElement2);
     }
 
-    public Configuration(State state, List<StackElement> stackElements) {
+    public Configuration(String state, List<String> stackElements) {
         this.state = state;
         this.stackElements = stackElements;
     }
 
     public static Configuration fromAntlrContext(PdsParser.ConfContext confContext) {
-        State s = new State(confContext.getChild(0).getText());
-        List<StackElement> stackElements = StackElement.fromStackContext((PdsParser.StackContext) confContext.getChild(1));
+        String state = confContext.getChild(0).getText();
+        List<String> stackElements = stackElementsFromContext((PdsParser.StackContext) confContext.getChild(1));
 
-        return new Configuration(s, stackElements);
+        return new Configuration(state, stackElements);
     }
 
-    public State getState() {
-        return state;
-    }
-
-    public void setState(State state) {
-        this.state = state;
-    }
-
-    public List<StackElement> getStackElements() {
+    public List<String> getStackElements() {
         return stackElements;
     }
 
-    public void setStackElements(List<StackElement> stackElements) {
+    public void setStackElements(List<String> stackElements) {
         this.stackElements = stackElements;
+    }
+
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
+    }
+
+    private static List<String> stackElementsFromContext(PdsParser.StackContext stackContext) {
+        List<String> list = new ArrayList<>();
+
+        PdsParser.Stack_contentContext stackElemContext = (PdsParser.Stack_contentContext) stackContext.getChild(1);
+
+        for (int i = 0; i < stackElemContext.getChildCount(); i++) {
+            String stackElem = stackElemContext.getChild(i).getText();
+
+            list.add(stackElem);
+        }
+
+        return list;
     }
 }

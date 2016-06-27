@@ -8,6 +8,7 @@ import java.util.List;
 
 /**
  * Created by Cynric on 5/18/16.
+ * !!!deprecated!!!
  */
 public class StackElement implements Serializable {
     private String omega = null;

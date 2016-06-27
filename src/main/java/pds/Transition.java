@@ -6,9 +6,9 @@ import java.io.Serializable;
  * Created by Cynric on 5/24/16.
  */
 public class Transition implements Serializable {
-    String startState;
-    String finalState;
-    String alphabet;
+    private String startState;
+    private String finalState;
+    private String alphabet;
 
     public Transition() {
         this.startState = null;
@@ -20,5 +20,37 @@ public class Transition implements Serializable {
         this.startState = startState;
         this.finalState = finalState;
         this.alphabet = alphabet;
+    }
+
+    public String getStartState() {
+        return startState;
+    }
+
+    public void setStartState(String startState) {
+        this.startState = startState;
+    }
+
+    public String getFinalState() {
+        return finalState;
+    }
+
+    public void setFinalState(String finalState) {
+        this.finalState = finalState;
+    }
+
+    public String getAlphabet() {
+        return alphabet;
+    }
+
+    public void setAlphabet(String alphabet) {
+        this.alphabet = alphabet;
+    }
+
+    public boolean equals(String startState, String finalState, String alphabet) {
+        return this.startState.equals(startState) && this.finalState.equals(finalState) && this.alphabet.equals(alphabet);
+    }
+
+    public boolean equals(String startState, String alphabet) {
+        return this.startState.equals(startState) && this.alphabet.equals(alphabet);
     }
 }
