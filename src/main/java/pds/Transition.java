@@ -16,7 +16,7 @@ public class Transition implements Serializable {
         this.alphabet = null;
     }
 
-    public Transition(String startState, String finalState, String alphabet) {
+    public Transition(String startState, String alphabet, String finalState) {
         this.startState = startState;
         this.finalState = finalState;
         this.alphabet = alphabet;
@@ -46,11 +46,15 @@ public class Transition implements Serializable {
         this.alphabet = alphabet;
     }
 
-    public boolean equals(String startState, String finalState, String alphabet) {
+    public boolean equals(String startState, String alphabet, String finalState) {
         return this.startState.equals(startState) && this.finalState.equals(finalState) && this.alphabet.equals(alphabet);
     }
 
     public boolean equals(String startState, String alphabet) {
         return this.startState.equals(startState) && this.alphabet.equals(alphabet);
+    }
+
+    public String toString() {
+        return startState + "[" + alphabet + "]" + " -> " + finalState;
     }
 }

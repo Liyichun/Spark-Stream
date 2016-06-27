@@ -46,6 +46,8 @@ public class SimpleApp {
             }
         });
 
+        Util.log("The size of trans after line2", bcTrans.getValue().size());
+
         for (Transition t : bcTrans.getValue()) { // line 3 - 4
             String q = t.getStartState();
             String gamma = t.getAlphabet();
@@ -132,8 +134,10 @@ public class SimpleApp {
         }
 
 
-        Util.log(bcRel.value().size());
-
+        Util.log("The size of rel", bcRel.value().size());
+        for (Transition t : bcRel.getValue()) {
+            Util.log("Transition", t.toString());
+        }
 
     }
 

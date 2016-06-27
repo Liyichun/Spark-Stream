@@ -27,9 +27,9 @@ public class TransRule implements Serializable {
     }
 
     public Transition toTransition() {
-        String startState = startConf.state.getName();
-        String stackElement = startConf.stackElements.get(0).getOmega();
-        String endState = endConf.state.getName();
+        String startState = startConf.getState();
+        String stackElement = startConf.stackElements.get(0);
+        String endState = endConf.getState();
 
         return new Transition(startState, stackElement, endState);
     }
