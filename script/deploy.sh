@@ -6,7 +6,7 @@ mvn clean package
 if [ $? -eq 0 ];then
   {
     echo "******build success! start to commit to spark ******"
-    spark-submit --class "SimpleApp" --master "local[4]" target/PDS-RA-1.0-SNAPSHOT-fat.jar
+    spark-submit --class "TestBroad" --master "local[4]" target/PDS-RA-1.0-SNAPSHOT-fat.jar
   }
 
 else
