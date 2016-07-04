@@ -1,15 +1,8 @@
-import antlr.PdsBaseVisitor;
-import antlr.PdsLexer;
-import antlr.PdsParser;
-import org.antlr.v4.runtime.ANTLRFileStream;
-import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.tree.ParseTree;
 import org.apache.spark.api.java.*;
 import org.apache.spark.SparkConf;
 import org.apache.spark.broadcast.Broadcast;
 import pds.*;
 
-import java.io.IOException;
 import java.util.*;
 
 /**
@@ -19,7 +12,7 @@ public class SimpleApp {
 
     public static void main(String[] args) {
 
-        List<TransRule> ruleSet = parseInputFile("example/plot.pds");
+        List<TransRule> ruleSet = Util.parseInputFile("example/plot.pds");
 
         SparkConf conf = new SparkConf().setAppName("Simple Application");
         JavaSparkContext sc = new JavaSparkContext(conf);
@@ -126,29 +119,5 @@ public class SimpleApp {
             Util.log("Transition", t.toString());
         }
 
-    }
-
-    private static List<TransRule> parseInputFile(String filename) {
-        List<TransRule> ruleSet = new ArrayList<>();
-
-        ANTLRFileStream input;
-        try {
-            input = new ANTLRFileStream(filename);
-
-            PdsLexer lexer = new PdsLexer(null);
-            lexer.setInputStream(input);
-
-            CommonTokenStream tokens = new CommonTokenStream(lexer);
-
-            PdsParser parser = new PdsParser(tokens);
-            ParseTree tree = parser.pds();
-
-            PdsBaseVisitor visitor = new PdsBaseVisitor(ruleSet);
-            visitor.visit(tree);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return ruleSet;
     }
 }
