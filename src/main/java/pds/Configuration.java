@@ -1,6 +1,7 @@
 package pds;
 
 import antlr.PdsParser;
+import scala.tools.cmd.gen.AnyVals;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -31,6 +32,20 @@ public class Configuration implements Serializable {
         return new Configuration(state, stackElements);
     }
 
+    private static List<String> stackElementsFromContext(PdsParser.StackContext stackContext) {
+        List<String> list = new ArrayList<>();
+
+        PdsParser.Stack_contentContext stackElemContext = (PdsParser.Stack_contentContext) stackContext.getChild(1);
+
+        for (int i = 0; i < stackElemContext.getChildCount(); i++) {
+            String stackElem = stackElemContext.getChild(i).getText();
+
+            list.add(stackElem);
+        }
+
+        return list;
+    }
+
     public List<String> getStackElements() {
         return stackElements;
     }
@@ -47,17 +62,23 @@ public class Configuration implements Serializable {
         this.state = state;
     }
 
-    private static List<String> stackElementsFromContext(PdsParser.StackContext stackContext) {
-        List<String> list = new ArrayList<>();
 
-        PdsParser.Stack_contentContext stackElemContext = (PdsParser.Stack_contentContext) stackContext.getChild(1);
-
-        for (int i = 0; i < stackElemContext.getChildCount(); i++) {
-            String stackElem = stackElemContext.getChild(i).getText();
-
-            list.add(stackElem);
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null || obj.getClass() != this.getClass()) {
+            return false;
+        } else {
+            Configuration conf = (Configuration) obj;
+            return this.state.equals(conf.state) && this.stackElements.equals(conf.stackElements);
         }
+    }
 
-        return list;
+    @Override
+    public int hashCode() {
+        int result = 17;
+        result = 37 * result + state.hashCode();
+        result = 37 * result + stackElements.hashCode();
+//        System.out.println(result);
+        return result;
     }
 }

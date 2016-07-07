@@ -50,5 +50,21 @@ public class TransRule implements Serializable {
         this.startConf = startConf;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null || obj.getClass() != this.getClass()) {
+            return false;
+        } else {
+            TransRule tr = (TransRule) obj;
+            return this.getStartConf().equals(tr.getStartConf()) && this.getEndConf().equals(tr.getEndConf());
+        }
+    }
 
+    @Override
+    public int hashCode() {
+        int result = 17;
+        result = 37 * result + this.getStartConf().hashCode();
+        result = 37 * result + this.getEndConf().hashCode();
+        return result;
+    }
 }

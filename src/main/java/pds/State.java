@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 /**
  * Created by Cynric on 5/18/16.
+ * !!!deprecated!!!
  */
 public class State implements Serializable {
     private String name;
