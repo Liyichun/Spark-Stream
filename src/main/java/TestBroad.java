@@ -18,12 +18,12 @@ public class TestBroad {
         SparkConf conf = new SparkConf().setAppName("Simple Application");
         JavaSparkContext sc = new JavaSparkContext(conf);
 
-        List<Integer> inputData = new ArrayList<>();
+        LinkedList<Integer> inputData = new LinkedList<>();
         for (int i = 1; i <= 10; i++) {
             inputData.add(i);
         }
+        Broadcast<Queue<Integer>> bc = sc.broadcast(inputData);
         JavaRDD<Integer> numbers = sc.parallelize(inputData);
-        Broadcast<Queue<Integer>> bc = sc.broadcast(new LinkedList<Integer>());
 
         Util.log("Size before iteration", bc.getValue().size());
 
@@ -37,16 +37,16 @@ public class TestBroad {
 //            Util.log("Size in iteration", bc.getValue().size());
 //        }
 
-        // 可以同时增减
-        numbers.foreach(i -> {
-            if (i % 2 == 0) {
-                bc.getValue().poll();
-                bc.getValue().add(i);
-            }
-        });
-
+        while (!bc.getValue().isEmpty()) {
+            // 可以同时增减
+            numbers.foreach(i -> {
+                if (i % 2 == 0) {
+                    bc.getValue().remove(i);
+                } else {
+                    bc.getValue().add(i * 2);
+                }
+            });
+        }
         Util.log("Size after iteration", bc.getValue().size());
-
-
     }
 }
