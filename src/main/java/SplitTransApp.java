@@ -1,3 +1,4 @@
+import antlr.Container;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -11,20 +12,21 @@ import java.util.*;
 /**
  * Created by Cynric on 6/29/16.
  */
-public class NewApp {
+public class SplitTransApp {
     public static void main(String[] args) {
 
-        List<TransRule> ruleSet = Util.parseInputFile("example/plot.pds");
+        Container container = Util.parseInputFile("example/plot.pds");
 
         SparkConf conf = new SparkConf().setAppName("Simple Application");
         JavaSparkContext sc = new JavaSparkContext(conf);
 
-        JavaRDD<TransRule> delta = sc.parallelize(ruleSet);
+        JavaRDD<TransRule> delta = sc.parallelize(container.ruleSet);
 
 //        Broadcast<Set<TransRule>> bcDelta = sc.broadcast(new HashSet<>());
 //        Broadcast<Set<TransRule>> bcDelta_prime = sc.broadcast(new HashSet<>());
 
-        Broadcast<Set<Transition>> bcTrans = sc.broadcast(new HashSet<>());
+        Broadcast<List<Transition>> bcTrans = sc.broadcast(new ArrayList<>());
+        Broadcast<Set<TransRule>> bcDelta = sc.broadcast(new HashSet<>());
         Broadcast<Set<Transition>> bcRel = sc.broadcast(new HashSet<>());
 
 
@@ -36,27 +38,9 @@ public class NewApp {
             }
         });
 
-        delta.foreach(transRule -> {
-            Configuration endConf = transRule.getEndConf();
-            List<String> endStackElems = endConf.getStackElements();
-            String q = endConf.getState();
-            String gamma = endStackElems.get(0);
+        Util.log("Size of bcTrans", bcTrans.getValue().size());
 
-            if (endStackElems.size() == 1) {
-                for (Transition t : bcTrans.getValue()) {
-                    if (q.equals(t.getStartState()) && gamma.equals(t.getAlphabet())) {
-
-                    }
-                }
-
-            } else if (endStackElems.size() == 2) {
-                String gamma2 = endStackElems.get(1);
-
-
-            }
-
-
-        });
+        JavaRDD<Transition> trans = sc.parallelize(bcTrans.getValue());
 
 
     }

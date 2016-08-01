@@ -1,3 +1,6 @@
+package example;
+
+import com.esotericsoftware.kryo.util.Util;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -15,7 +18,7 @@ public class TestBroad {
 
     public static void main(String[] args) {
 
-        SparkConf conf = new SparkConf().setAppName("Simple Application");
+        SparkConf conf = new SparkConf().setAppName("Simple Application").setMaster("local[4]");
         JavaSparkContext sc = new JavaSparkContext(conf);
 
         LinkedList<Integer> inputData = new LinkedList<>();
@@ -27,26 +30,20 @@ public class TestBroad {
 
         Util.log("Size before iteration", bc.getValue().size());
 
-//        while (true) {
-//            if (bc.getValue().isEmpty()) {
-//                break;
-//            }
-//            bc.getValue().poll();
-//            bc.getValue().poll();
-////            bc.getValue().add(1);
-//            Util.log("Size in iteration", bc.getValue().size());
-//        }
-
-        while (!bc.getValue().isEmpty()) {
-            // 可以同时增减
-            numbers.foreach(i -> {
-                if (i % 2 == 0) {
-                    bc.getValue().remove(i);
-                } else {
-                    bc.getValue().add(i * 2);
-                }
-            });
+        while (true) {
+            if (bc.getValue().isEmpty()) {
+                break;
+            }
+            bc.getValue().poll();
+            bc.getValue().poll();
+//            bc.getValue().add(1);
+            Util.log("Size in iteration", bc.getValue().size());
         }
+//
+//        while (!bc.getValue().isEmpty()) {
+//            // 可以同时增减
+//
+//        }
         Util.log("Size after iteration", bc.getValue().size());
     }
 }

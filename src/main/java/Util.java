@@ -1,3 +1,4 @@
+import antlr.Container;
 import antlr.PdsBaseVisitor;
 import antlr.PdsLexer;
 import antlr.PdsParser;
@@ -45,8 +46,8 @@ public class Util {
         log(title, String.valueOf(i));
     }
 
-    public static List<TransRule> parseInputFile(String filename) {
-        List<TransRule> ruleSet = new ArrayList<>();
+    public static Container parseInputFile(String filename) {
+        Container container = new Container();
 
         ANTLRFileStream input;
         try {
@@ -60,12 +61,12 @@ public class Util {
             PdsParser parser = new PdsParser(tokens);
             ParseTree tree = parser.pds();
 
-            PdsBaseVisitor visitor = new PdsBaseVisitor(ruleSet);
+            PdsBaseVisitor visitor = new PdsBaseVisitor(container);
             visitor.visit(tree);
 
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return ruleSet;
+        return container;
     }
 }

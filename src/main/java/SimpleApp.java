@@ -1,3 +1,4 @@
+import antlr.Container;
 import org.apache.spark.api.java.*;
 import org.apache.spark.SparkConf;
 import org.apache.spark.broadcast.Broadcast;
@@ -12,7 +13,7 @@ public class SimpleApp {
 
     public static void main(String[] args) {
 
-        List<TransRule> ruleSet = Util.parseInputFile("example/plot.pds");
+        Container container = Util.parseInputFile("example/plot.pds");
 
         SparkConf conf = new SparkConf().setAppName("Simple Application");
         JavaSparkContext sc = new JavaSparkContext(conf);
@@ -21,7 +22,7 @@ public class SimpleApp {
 //        Util.log(String.valueOf(length));
 //        Util.log(lines.toString());
 
-        JavaRDD<TransRule> inputData = sc.parallelize(ruleSet);
+        JavaRDD<TransRule> inputData = sc.parallelize(container.ruleSet);
 
         Broadcast<Set<TransRule>> bcDelta = sc.broadcast(new HashSet<>());
         Broadcast<Set<TransRule>> bcDelta_prime = sc.broadcast(new HashSet<>());

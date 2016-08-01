@@ -1,3 +1,5 @@
+package example;
+
 import pds.Configuration;
 import pds.TransRule;
 import pds.Transition;

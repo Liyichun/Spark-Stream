@@ -1,6 +1,7 @@
 package antlr;// Generated from /Users/cynric/workspaces/antlr/pds/pds/src/Pds.g4 by ANTLR 4.5.1
 
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
+import pds.Configuration;
 import pds.TransRule;
 
 import java.util.List;
@@ -14,10 +15,10 @@ import java.util.List;
  *            operations with no return type.
  */
 public class PdsBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements PdsVisitor<T> {
-    public List<TransRule> ruleSet;
+    public Container container;
 
-    public PdsBaseVisitor(List<TransRule> ruleSet) {
-        this.ruleSet = ruleSet;
+    public PdsBaseVisitor(Container container) {
+        this.container = container;
     }
 
     /**
@@ -41,6 +42,7 @@ public class PdsBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements Pd
     @Override
     public T visitStart(PdsParser.StartContext ctx) {
 //        System.out.println("start: " + ctx.getText());
+        container.startConf = Configuration.fromAntlrContext((PdsParser.ConfContext) ctx.getChild(1));
         return visitChildren(ctx);
     }
 
@@ -65,8 +67,7 @@ public class PdsBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements Pd
     @Override
     public T visitTrans_rule(PdsParser.Trans_ruleContext ctx) {
 //        System.out.println("single rule: " + ctx.getText());
-
-        ruleSet.add(TransRule.fromTransContext(ctx));
+        container.ruleSet.add(TransRule.fromTransContext(ctx));
         return visitChildren(ctx);
     }
 
