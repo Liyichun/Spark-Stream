@@ -3,6 +3,7 @@ package pds;
 import antlr.PdsParser;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * Created by Cynric on 5/18/16.
@@ -66,5 +67,23 @@ public class TransRule implements Serializable {
         result = 37 * result + this.getStartConf().hashCode();
         result = 37 * result + this.getEndConf().hashCode();
         return result;
+    }
+
+    @Override
+    public String toString() {
+        List endStack = this.endConf.getStackElements();
+        String output = this.startConf.getState() + " <" + this.startConf.getStackElements().get(0).toString() +
+                "> --> " + this.endConf.getState();
+        if (endStack.size() == 0) {
+            output += " <>";
+            return output;
+        } else if (endStack.size() == 1) {
+            output += " <" + endStack.get(0).toString() + "> ";
+            return output;
+        } else {
+            output += " <" + endStack.get(0).toString() + ", " + endStack.get(1).toString() + "> ";
+            return output;
+        }
+
     }
 }

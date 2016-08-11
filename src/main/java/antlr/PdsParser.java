@@ -1,22 +1,26 @@
-package antlr;// Generated from /Users/cynric/workspaces/antlr/pds/pds/src/Pds.g4 by ANTLR 4.5.1
-import org.antlr.v4.runtime.atn.*;
-import org.antlr.v4.runtime.dfa.DFA;
+package antlr;// Generated from /Users/cynric/workspaces/antlr/pds/pds/src/Pds.g4 by ANTLR 4.5.3
+
 import org.antlr.v4.runtime.*;
-import org.antlr.v4.runtime.misc.*;
-import org.antlr.v4.runtime.tree.*;
+import org.antlr.v4.runtime.atn.ATN;
+import org.antlr.v4.runtime.atn.ATNDeserializer;
+import org.antlr.v4.runtime.atn.ParserATNSimulator;
+import org.antlr.v4.runtime.atn.PredictionContextCache;
+import org.antlr.v4.runtime.dfa.DFA;
+import org.antlr.v4.runtime.tree.ParseTreeListener;
+import org.antlr.v4.runtime.tree.ParseTreeVisitor;
+import org.antlr.v4.runtime.tree.TerminalNode;
+
 import java.util.List;
-import java.util.Iterator;
-import java.util.ArrayList;
 
 @SuppressWarnings({"all", "warnings", "unchecked", "unused", "cast"})
 public class PdsParser extends Parser {
-	static { RuntimeMetaData.checkVersion("4.5.1", RuntimeMetaData.VERSION); }
+	static { RuntimeMetaData.checkVersion("4.5.3", RuntimeMetaData.VERSION); }
 
 	protected static final DFA[] _decisionToDFA;
 	protected static final PredictionContextCache _sharedContextCache =
 		new PredictionContextCache();
 	public static final int
-		T__0=1, T__1=2, T__2=3, T__3=4, GAMMA=5, TO=6, DIGIT=7, ID=8, WS=9;
+		T__0=1, T__1=2, T__2=3, T__3=4, TO=5, ID=6, WS=7;
 	public static final int
 		RULE_pds = 0, RULE_start = 1, RULE_rules = 2, RULE_trans_rule = 3, RULE_conf = 4, 
 		RULE_stack = 5, RULE_stack_content = 6;
@@ -25,10 +29,10 @@ public class PdsParser extends Parser {
 	};
 
 	private static final String[] _LITERAL_NAMES = {
-		null, "'('", "')'", "'<'", "'>'", null, "'-->'"
+		null, "'('", "')'", "'<'", "'>'", "'-->'"
 	};
 	private static final String[] _SYMBOLIC_NAMES = {
-		null, null, null, null, null, "GAMMA", "TO", "DIGIT", "ID", "WS"
+		null, null, null, null, null, "TO", "ID", "WS"
 	};
 	public static final Vocabulary VOCABULARY = new VocabularyImpl(_LITERAL_NAMES, _SYMBOLIC_NAMES);
 
@@ -384,9 +388,9 @@ public class PdsParser extends Parser {
 	}
 
 	public static class Stack_contentContext extends ParserRuleContext {
-		public List<TerminalNode> GAMMA() { return getTokens(PdsParser.GAMMA); }
-		public TerminalNode GAMMA(int i) {
-			return getToken(PdsParser.GAMMA, i);
+		public List<TerminalNode> ID() { return getTokens(PdsParser.ID); }
+		public TerminalNode ID(int i) {
+			return getToken(PdsParser.ID, i);
 		}
 		public Stack_contentContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
@@ -419,19 +423,19 @@ public class PdsParser extends Parser {
 				{
 				}
 				break;
-			case GAMMA:
+			case ID:
 				enterOuterAlt(_localctx, 2);
 				{
 				{
 				setState(39);
-				match(GAMMA);
+				match(ID);
 				}
 				setState(41);
 				_la = _input.LA(1);
-				if (_la==GAMMA) {
+				if (_la==ID) {
 					{
 					setState(40);
-					match(GAMMA);
+					match(ID);
 					}
 				}
 
@@ -453,7 +457,7 @@ public class PdsParser extends Parser {
 	}
 
 	public static final String _serializedATN =
-		"\3\u0430\ud6d1\u8206\uad2d\u4417\uaef1\u8d80\uaadd\3\13\60\4\2\t\2\4\3"+
+		"\3\u0430\ud6d1\u8206\uad2d\u4417\uaef1\u8d80\uaadd\3\t\60\4\2\t\2\4\3"+
 		"\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\4\b\t\b\3\2\3\2\3\2\3\3\3\3\3\3\3"+
 		"\3\3\4\7\4\31\n\4\f\4\16\4\34\13\4\3\5\3\5\3\5\3\5\3\6\3\6\3\6\3\7\3\7"+
 		"\3\7\3\7\3\b\3\b\3\b\5\b,\n\b\5\b.\n\b\3\b\2\2\t\2\4\6\b\n\f\16\2\2+\2"+
@@ -461,9 +465,9 @@ public class PdsParser extends Parser {
 		"\2\16-\3\2\2\2\20\21\5\4\3\2\21\22\5\6\4\2\22\3\3\2\2\2\23\24\7\3\2\2"+
 		"\24\25\5\n\6\2\25\26\7\4\2\2\26\5\3\2\2\2\27\31\5\b\5\2\30\27\3\2\2\2"+
 		"\31\34\3\2\2\2\32\30\3\2\2\2\32\33\3\2\2\2\33\7\3\2\2\2\34\32\3\2\2\2"+
-		"\35\36\5\n\6\2\36\37\7\b\2\2\37 \5\n\6\2 \t\3\2\2\2!\"\7\n\2\2\"#\5\f"+
+		"\35\36\5\n\6\2\36\37\7\7\2\2\37 \5\n\6\2 \t\3\2\2\2!\"\7\b\2\2\"#\5\f"+
 		"\7\2#\13\3\2\2\2$%\7\5\2\2%&\5\16\b\2&\'\7\6\2\2\'\r\3\2\2\2(.\3\2\2\2"+
-		")+\7\7\2\2*,\7\7\2\2+*\3\2\2\2+,\3\2\2\2,.\3\2\2\2-(\3\2\2\2-)\3\2\2\2"+
+		")+\7\b\2\2*,\7\b\2\2+*\3\2\2\2+,\3\2\2\2,.\3\2\2\2-(\3\2\2\2-)\3\2\2\2"+
 		".\17\3\2\2\2\5\32+-";
 	public static final ATN _ATN =
 		new ATNDeserializer().deserialize(_serializedATN.toCharArray());

@@ -5,30 +5,45 @@ import antlr.PdsParser;
 import org.antlr.v4.runtime.ANTLRFileStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
-import pds.TransRule;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
+
 
 /**
  * Created by Cynric on 5/26/16.
  */
 public class Util {
 
-    public static void log(String content) {
-        System.out.println("****************************** program output start ******************************");
-        System.out.println("CONTENT: " + content);
+    public static void logStart() {
+        System.out.println("****************************** program output start ****************************");
+    }
+
+    public static void logEnd() {
         System.out.println("****************************** program output end ******************************");
+    }
+
+    public static void log(String content) {
+
+        System.out.println("VALUE: " + content);
+
     }
 
     public static void log(String title, String content) {
-        System.out.println("****************************** program output start ******************************");
         System.out.println("TITLE: " + title);
-        System.out.println("CONTENT: " + content);
-        System.out.println("****************************** program output end ******************************");
+        System.out.println("VALUE: " + content);
     }
 
+    public static <T> void log(String title, Collection<T> iter) {
+        System.out.println("TITLE: " + title);
+
+        StringBuilder contentBuilder = new StringBuilder("");
+        for (T t : iter) {
+            contentBuilder.append(t.toString()).append(", ");
+        }
+
+        System.out.println("VALUE: " + contentBuilder.toString());
+    }
 
     public static void log(int i) {
         log(String.valueOf(i));
