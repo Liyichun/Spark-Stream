@@ -1,5 +1,6 @@
 import antlr.Container;
 import io.netty.util.internal.ConcurrentSet;
+import org.apache.spark.Accumulator;
 import org.apache.spark.api.java.*;
 import org.apache.spark.SparkConf;
 import org.apache.spark.broadcast.Broadcast;
@@ -21,10 +22,13 @@ public class SplitDelta1 {
 
         Container container = Util.parseInputFile("example/paper.pds");
 
-        SparkConf conf = new SparkConf().setAppName("Simple Application").setMaster("local[4]");
+        SparkConf conf = new SparkConf().setAppName("SplitDelta1").setMaster("local[4]");
         JavaSparkContext sc = new JavaSparkContext(conf);
 
         JavaRDD<TransRule> delta = sc.parallelize(container.ruleSet);
+
+        Accumulator<Integer> lastSum = sc.accumulator(0);
+        Accumulator<Integer> currSum = sc.accumulator(0);
 
         Configuration startConfg = container.startConf;
         List<Transition> startTrans = Transition.getStartTrans(startConfg);
@@ -43,7 +47,8 @@ public class SplitDelta1 {
 
         Util.log("The size of trans after line2", bcTrans.getValue().size());
 
-        while (!bcTrans.getValue().isEmpty()) {   // line 3
+        while (lastSum != currSum) {   // line 3
+            lastSum = currSum;
             Util.log("The size of trans", bcTrans.getValue().size());
             Transition t = bcTrans.getValue().poll(); // line 4
             String q = t.getStartState();

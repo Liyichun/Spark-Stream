@@ -26,12 +26,14 @@ public class SplitTransApp {
 
         Container container = Util.parseInputFile("example/paper.pds");
 
-        SparkConf conf = new SparkConf().setAppName("Simple Application").setMaster("local[4]");
+        SparkConf conf = new SparkConf().setAppName("SplitTransApp").setMaster("local[4]");
         JavaSparkContext sc = new JavaSparkContext(conf);
 
         JavaRDD<TransRule> delta = sc.parallelize(container.ruleSet);
 
-        Broadcast<List<Transition>> bcTrans = sc.broadcast(new Vector<>());
+        List<Transition> startTrans = Transition.getStartTrans(container.startConf);
+        Broadcast<List<Transition>> bcTrans = sc.broadcast(new Vector<>(startTrans));
+
         Broadcast<Map<Transition, Object>> bcRel = sc.broadcast(new ConcurrentHashMap<Transition, Object>());
         Broadcast<Map<TransRule, Object>> bcDelta = sc.broadcast(new ConcurrentHashMap<TransRule, Object>());
         Accumulator<Integer> iterTime = sc.accumulator(0);
