@@ -19,12 +19,13 @@ public class WordCount {
         JavaSparkContext sc = new JavaSparkContext(conf);
 
         JavaRDD<String> textFile = sc.textFile("example/README.md");
-//        System.out.println(textFile.collect().toString());
+        JavaRDD<Integer> lineLength = textFile.map(s -> s.length());
+        int totalLength = lineLength.reduce((a, b) -> a + b);
+        System.out.println("length of file: " + totalLength);
 
         JavaRDD<String> words = textFile.flatMap((String s) -> Arrays.asList(s.split(" ")));
 
         JavaPairRDD<String, Integer> pairs = words.mapToPair((String s) -> new Tuple2<>(s, 1));
-
 
         JavaPairRDD<String, Integer> counts = pairs.reduceByKey((Integer a, Integer b) -> a + b);
 

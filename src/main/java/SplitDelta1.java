@@ -1,39 +1,40 @@
 import antlr.Container;
+import io.netty.util.internal.ConcurrentSet;
 import org.apache.spark.api.java.*;
 import org.apache.spark.SparkConf;
 import org.apache.spark.broadcast.Broadcast;
 import pds.*;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Created by Cynric on 5/17/16.
+ * 将Delta分散到RDD中, trans和rel放在广播变量中,
+ * 按照伪代码的思路,每次从trans中取出一条记录,进行计算。
+ * 外层遍历trans,内层遍历delta的RDD
+ * 终止条件是trans的size变为0
  */
-public class SimpleApp {
+public class SplitDelta1 {
 
     public static void main(String[] args) {
 
-        Container container = Util.parseInputFile("example/plot.pds");
+        Container container = Util.parseInputFile("example/paper.pds");
 
-        SparkConf conf = new SparkConf().setAppName("Simple Application");
+        SparkConf conf = new SparkConf().setAppName("Simple Application").setMaster("local[4]");
         JavaSparkContext sc = new JavaSparkContext(conf);
-//        JavaRDD<String> lines = sc.textFile("example/plot.pds").cache();
-//        long length = lines.count();
-//        Util.log(String.valueOf(length));
-//        Util.log(lines.toString());
 
-        JavaRDD<TransRule> inputData = sc.parallelize(container.ruleSet);
+        JavaRDD<TransRule> delta = sc.parallelize(container.ruleSet);
 
-        Broadcast<Set<TransRule>> bcDelta = sc.broadcast(new HashSet<>());
-        Broadcast<Set<TransRule>> bcDelta_prime = sc.broadcast(new HashSet<>());
-        Broadcast<Queue<Transition>> bcTrans = sc.broadcast(new LinkedList<>());
-        Broadcast<Set<Transition>> bcRel = sc.broadcast(new HashSet<>());
+        Configuration startConfg = container.startConf;
+        List<Transition> startTrans = Transition.getStartTrans(startConfg);
+
+        Broadcast<Queue<Transition>> bcTrans = sc.broadcast(new ConcurrentLinkedQueue<>(startTrans));
+        Broadcast<Set<Transition>> bcRel = sc.broadcast(new ConcurrentSet<>());
 
 
-        inputData.foreach(transRule -> {
-            bcDelta.getValue().add(transRule); // add data into bcDelta
-
-            // find all <p, r> -> <p', e>   line2 of pseudocode
+        // find all <p, r> -> <p', e>  line2
+        delta.foreach(transRule -> {
             if (transRule.getEndConf().getStackElements().size() == 0) {
                 Transition transition = transRule.toTransition();
                 bcTrans.getValue().add(transition);
@@ -52,26 +53,9 @@ public class SimpleApp {
             if (!bcRel.getValue().contains(t)) { // line 5
                 bcRel.getValue().add(t); // line 6
 
-                for (TransRule transRule : bcDelta_prime.getValue()) { // line 7: traverse delta_prime
-                    Configuration endConf = transRule.getEndConf();
-                    List<String> stackElements = endConf.getStackElements();
+                delta.flatMap(transRule -> {
+                    List<TransRule> flatMapRet = new ArrayList<TransRule>();
 
-                    if (stackElements.size() != 1) { // line 7: check the size of stacks, we only accept size 1
-                        continue;
-                    }
-
-                    if (q.equals(endConf.getState()) && // line 7: check belonging relationship
-                            gamma.equals(stackElements.get(0))) {
-
-                        bcTrans.getValue().add(new Transition( // line 8
-                                transRule.getStartConf().getState(),
-                                transRule.getStartConf().getStackElements().get(0),
-                                q_prime));
-
-                    }
-                }
-
-                for (TransRule transRule : bcDelta.getValue()) { // line 7 & line 9: traverse delta
                     Configuration endConf = transRule.getEndConf();
                     List<String> stackElements = endConf.getStackElements();
 
@@ -94,7 +78,7 @@ public class SimpleApp {
                             List<String> list = new ArrayList<>(1);
                             list.add(gamma2);
 
-                            bcDelta_prime.getValue().add(new TransRule( // line 10
+                            flatMapRet.add(new TransRule( // line 10
                                     transRule.getStartConf(),
                                     new Configuration(q_prime, list)
                             ));
@@ -110,15 +94,15 @@ public class SimpleApp {
                             }
                         }
                     }
-                }
+                    return flatMapRet;
+                });
             }
         }
 
-
-        Util.log("The size of rel", bcRel.value().size());
-        for (Transition t : bcRel.getValue()) {
-            Util.log("Transition", t.toString());
-        }
-
+        Util.logStart();
+//        Util.log("Total iter times", iterTime.value());
+        Util.log("Size of result", bcRel.getValue().size());
+        Util.log("Content of result", bcRel.getValue());
+        Util.logEnd();
     }
 }

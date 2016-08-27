@@ -1,6 +1,8 @@
 package pds;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Cynric on 5/24/16.
@@ -44,6 +46,18 @@ public class Transition implements Serializable {
 
     public void setAlphabet(String alphabet) {
         this.alphabet = alphabet;
+    }
+
+    public static List<Transition> getStartTrans(Configuration startConf) {
+        List<String> stackElementList = startConf.getStackElements();
+        List<Transition> ret = new ArrayList<>(stackElementList.size());
+
+        ret.add(new Transition(startConf.getState(), stackElementList.get(0), "s1"));
+        for (int i = 1; i < stackElementList.size(); i++) {
+            ret.add(new Transition("s" + i, stackElementList.get(i), "s" + (i + 1)));
+        }
+
+        return  ret;
     }
 
     @Override

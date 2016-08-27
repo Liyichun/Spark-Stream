@@ -4,24 +4,20 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.broadcast.Broadcast;
-import org.apache.spark.ui.jobs.UIData;
 import pds.Configuration;
 import pds.TransRule;
 import pds.Transition;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
-
-import static org.apache.hadoop.yarn.webapp.hamlet.HamletSpec.Media.print;
 
 /**
  * Created by Cynric on 6/29/16.
- * 将trans分散到RDD中, delta 和 rel 都放在广播变量里,
- * 外层遍历trans,内层遍历delta和rel,
- * 终止条件是trans大小为0
- * 但是问题在于,trans互相独立,他们计算得到的结果无法及时共享
  */
-public class SplitTransApp {
+public class SplitTransLongwait {
     public static void main(String[] args) {
 
         Container container = Util.parseInputFile("example/paper.pds");
@@ -104,42 +100,26 @@ public class SplitTransApp {
                         }
                     }
                 }
-//                synchronized (Util.class) {
-//                    Util.logStart();
-//                    Util.log("Input RDD", t.toString());
-//                    Util.log("Output RDD", flatMapRet);
-//                    Util.logEnd();
-//                }
                 return flatMapRet;
             }).distinct();
 
             output = trans.collect();
 
-            Util.logStart();
-            System.out.println("Iter " + iterTime.value() + " over ");
-            Util.log("Size of Trans", output.size());
-            Util.log("Content of Trans", output);
-            Util.log("Size of Rel", bcRel.getValue().keySet().size());
-            Util.log("Content of Rel", bcRel.getValue().keySet());
-            Util.log("Size of Delta", bcDelta.getValue().keySet().size());
-            Util.log("Content of Delta", bcDelta.getValue().keySet());
-            Util.logEnd();
+//            Util.logStart();
+//            System.out.println("Iter " + iterTime.value() + " over ");
+//            Util.log("Size of Trans", output.size());
+//            Util.log("Content of Trans", output);
+//            Util.log("Size of Rel", bcRel.getValue().keySet().size());
+//            Util.log("Content of Rel", bcRel.getValue().keySet());
+//            Util.log("Size of Delta", bcDelta.getValue().keySet().size());
+//            Util.log("Content of Delta", bcDelta.getValue().keySet());
+//            Util.logEnd();
 
             iterTime.add(1);
             if (iterTime.value() == 2) {
                 break;
             }
 
-//            if (iterTime.value() % 50 == 0) {
-//                Util.logStart();
-//                Util.log("Size of Trans", output.size());
-//                Util.log("Content of Trans", output);
-//                Util.logEnd();
-//
-//                if (iterTime.value() == 200) {
-//                    break;
-//                }
-//            }
         } while (output.size() > 0);
 
         Util.logStart();
