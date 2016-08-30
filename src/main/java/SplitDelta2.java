@@ -18,7 +18,9 @@ public class SplitDelta2 {
 
     public static void main(String[] args) {
 
-        String inputFile = "plot_2";
+//        String inputFile = "plot_2";
+//        String inputFile = "Mpds110_2";
+        String inputFile = "plot";
         Container container = Util.parseInputFile("example/" + inputFile + ".pds");
 
         SparkConf conf = new SparkConf().setAppName("SplitDelta2").setMaster("local[200]");
@@ -64,7 +66,7 @@ public class SplitDelta2 {
             delta = delta.flatMap(transRule -> {
 //                System.out.println("enter flatmap: " + transRule);
 
-                List<TransRule> flatMapRet = new ArrayList<TransRule>();
+                List<TransRule> flatMapRet = new ArrayList<>();
 
                 Configuration endConf = transRule.getEndConf();
                 List<String> stackElements = endConf.getStackElements();
