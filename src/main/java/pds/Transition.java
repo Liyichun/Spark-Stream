@@ -88,6 +88,6 @@ public class Transition implements Serializable {
     }
 
     public String toString() {
-        return startState + "[" + alphabet + "]" + " -> " + finalState;
+        return String.format("%s -[%s]-> %s", startState, alphabet, finalState);
     }
 }

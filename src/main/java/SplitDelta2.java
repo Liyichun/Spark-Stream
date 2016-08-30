@@ -18,7 +18,8 @@ public class SplitDelta2 {
 
     public static void main(String[] args) {
 
-        Container container = Util.parseInputFile("example/MPds110.pds");
+        String inputFile = "plot_2";
+        Container container = Util.parseInputFile("example/" + inputFile + ".pds");
 
         SparkConf conf = new SparkConf().setAppName("SplitDelta2").setMaster("local[200]");
         JavaSparkContext sc = new JavaSparkContext(conf);
@@ -48,14 +49,15 @@ public class SplitDelta2 {
             }
         });
 
+        Date startDate = new Date();
 
         while (!lastSum.value().equals(currSum.value())) {   // line 3
             iterTime.add(1);
-            Util.logStart();
-            Util.log("Iter time: ", iterTime.value());
-            Util.log("size of last", lastSum.value());
-            Util.log("size of current", currSum.value());
-            Util.logEnd();
+//            Util.logStart();
+//            Util.log("Iter time: ", iterTime.value());
+//            Util.log("size of last", lastSum.value());
+//            Util.log("size of current", currSum.value());
+//            Util.logEnd();
 
             lastSum.setValue(currSum.value());
 
@@ -130,11 +132,14 @@ public class SplitDelta2 {
             delta.count();
         }
 
-
+        Date endDate = new Date();
         Util.logStart();
+        Util.log("Start time: ", startDate.getTime());
+        Util.log("End time: ", endDate.getTime());
+        Util.log("Duration: ", endDate.getTime() - startDate.getTime());
         Util.log("Total iter times", iterTime.value());
         Util.log("Size of result", bcTrans.getValue().size());
-        Util.log("Content of result", bcTrans.getValue());
+        Util.dumpToFile("output/" + inputFile + ".txt", bcTrans.getValue());
         Util.logEnd();
     }
 }
