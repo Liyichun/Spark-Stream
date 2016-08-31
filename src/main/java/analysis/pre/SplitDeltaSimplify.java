@@ -3,13 +3,17 @@ package analysis.pre;
 import antlr.Container;
 import io.netty.util.internal.ConcurrentSet;
 import org.apache.spark.Accumulator;
-import org.apache.spark.api.java.*;
 import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.broadcast.Broadcast;
-import pds.*;
+import pds.Configuration;
+import pds.TransRule;
+import pds.Transition;
 import util.Util;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by Cynric on 5/17/16.
@@ -17,7 +21,7 @@ import java.util.*;
  * 在外层遍历Delat的RDD,在内层遍历trans的广播变量,将新的结果追加到trans中
  * 终止条件是trans的size不再增长
  */
-public class SplitDelta2 {
+public class SplitDeltaSimplify {
 
     public static void main(String[] args) {
 
@@ -39,12 +43,18 @@ public class SplitDelta2 {
         Configuration startConfg = container.startConf;
         List<Transition> startTrans = Transition.getStartTrans(startConfg);
 
-        Set<Transition> trans = new ConcurrentSet<>();
+        Map<String, Set<Transition>> trans = new ConcurrentHashMap<>();
         for (Transition t : startTrans) {
-            trans.add(t);
+            String sig = t.getAlphabet() + t.getFinalState();
+            if (trans.containsKey(sig)) {
+                trans.get(sig).add(t);
+            } else {
+                Set<Transition> newSet = new ConcurrentSet<>();
+                newSet.add(t);
+                trans.put(sig, newSet);
+            }
         }
-        Broadcast<Set<Transition>> bcTrans = sc.broadcast(trans);
-        Broadcast<Set<Transition>> bcRel = sc.broadcast(new ConcurrentSet<>());
+        Broadcast<Map<String, Set<Transition>>> bcTrans = sc.broadcast(trans);
 
 
         // find all <p, r> -> <p', e>  line2
