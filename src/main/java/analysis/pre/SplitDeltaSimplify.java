@@ -1,19 +1,18 @@
 package analysis.pre;
 
-import antlr.Container;
+import antlr.simple.*;
 import io.netty.util.internal.ConcurrentSet;
 import org.apache.spark.Accumulator;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.broadcast.Broadcast;
-import pds.Configuration;
-import pds.TransRule;
-import pds.Transition;
+import pds.simple.*;
 import util.Util;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+
 
 /**
  * Created by Cynric on 5/17/16.
@@ -26,126 +25,121 @@ public class SplitDeltaSimplify {
     public static void main(String[] args) {
 
 //        String inputFile = "plot_2";
-        String inputFile = "Mpds110_2";
-//        String inputFile = "plot";
+//        String inputFile = "Mpds110_2";
+        String inputFile = "plot";
 //        String inputFile = "test";
-        Container container = Util.parseInputFile("example/" + inputFile + ".simplepds");
+        Container container = Container.parseInputFile("example/" + inputFile + ".pds");
 
-        SparkConf conf = new SparkConf().setAppName("SplitDelta2").setMaster("local[200]");
+        SparkConf conf = new SparkConf().setAppName("SplitDelta2").setMaster("local[4]");
         JavaSparkContext sc = new JavaSparkContext(conf);
 
-        JavaRDD<TransRule> delta = sc.parallelize(container.ruleSet);
+//        container.printRuleSet(); // check
+
+        JavaRDD<int[]> delta = sc.parallelize(container.ruleSet);
 
         Accumulator<Integer> lastSum = sc.accumulator(-1);
         Accumulator<Integer> currSum = sc.accumulator(0);
         Accumulator<Integer> iterTime = sc.accumulator(0);
 
-        Configuration startConfg = container.startConf;
-        List<Transition> startTrans = Transition.getStartTrans(startConfg);
+        int[] startConfg = container.startConf;
+        int[][] startTrans = Transition.getStartTrans(startConfg);
 
-        Map<String, Set<Transition>> trans = new ConcurrentHashMap<>();
-        for (Transition t : startTrans) {
-            String sig = t.getAlphabet() + t.getFinalState();
-            if (trans.containsKey(sig)) {
-                trans.get(sig).add(t);
+        Map<Integer, Set<int[]>> transBucket = new ConcurrentHashMap<>();
+        Set<Integer> existFromStates = new ConcurrentSet<>();
+
+        for (int[] t : startTrans) {
+            int sig = t[0] + t[1]; // for a transition (q, r, q'), we put it into the bucket with (q, r)
+            if (transBucket.containsKey(sig)) {
+                transBucket.get(sig).add(t);
             } else {
-                Set<Transition> newSet = new ConcurrentSet<>();
-                newSet.add(t);
-                trans.put(sig, newSet);
+                Set<int[]> set = new ConcurrentSet<>();
+                set.add(t);
+                transBucket.put(sig, set);
+                existFromStates.add(t[0]);
             }
         }
-        Broadcast<Map<String, Set<Transition>>> bcTrans = sc.broadcast(trans);
-
-
-        // find all <p, r> -> <p', e>  line2
-//        delta.foreach(transRule -> {
-//            if (transRule.getEndConf().getStackElements().size() == 0) {
-//                Transition transition = transRule.toTransition();
-//                if (!transition.getFinalState().equals(container.startConf.getState())) {
-//                    bcTrans.getValue().add(transition);
-//                }
-//            }
-//        });
+        Broadcast<Map<Integer, Set<int[]>>> bcTransBucket = sc.broadcast(transBucket);
+        Broadcast<Set<Integer>> bcExistFromStates = sc.broadcast(existFromStates);
 
         Date startDate = new Date();
 
         while (!lastSum.value().equals(currSum.value())) {   // line 3
             iterTime.add(1);
-//            util.Util.logStart();
-//            util.Util.log("Iter time: ", iterTime.value());
-//            util.Util.log("size of last", lastSum.value());
-//            util.Util.log("size of current", currSum.value());
-//            util.Util.logEnd();
+            util.Util.logStart();
+            util.Util.log("Iter time: ", iterTime.value());
+            util.Util.log("size of last", lastSum.value());
+            util.Util.log("size of current", currSum.value());
+            util.Util.logEnd();
 
             lastSum.setValue(currSum.value());
 
             delta = delta.flatMap(transRule -> {
-//                System.out.println("enter flatmap: " + transRule);
+                List<int[]> flatMapRet = new ArrayList<>();
 
-                List<TransRule> flatMapRet = new ArrayList<>();
+                // epsilon transRule
+                if (transRule.length == 3) {
+                    int[] newTransition = TransRule.toTransition(transRule);
+                    int sig = newTransition[0] + newTransition[1]; // for a transition (q, r, q'), we put it into the bucket with (q, r)
 
-                Configuration endConf = transRule.getEndConf();
-                List<String> stackElements = endConf.getStackElements();
-
-                if (stackElements.size() == 0) {
-                    Transition newTransition = transRule.toTransition();
-                    for (Transition t : bcTrans.getValue()) {
-                        if (newTransition.getFinalState().equals(t.getStartState())) {
-                            bcTrans.getValue().add(newTransition);
-                            currSum.add(1);
+                    if (existFromStates.contains(newTransition[2])) { // 新规则的finalState在已有规则的startState中
+                        if (bcTransBucket.getValue().containsKey(sig)) {
+                            bcTransBucket.getValue().get(sig).add(newTransition);
+                        } else {
+                            Set<int[]> set = new ConcurrentSet<int[]>();
+                            set.add(newTransition);
+                            bcTransBucket.getValue().put(sig, set);
                         }
+                        bcExistFromStates.getValue().add(newTransition[0]);
+                        currSum.add(1);
                     }
-                }
+                } else {
+                    int transRuleSig = transRule[2] + transRule[3];
 
-                for (Transition t : bcTrans.getValue()) {
-                    String q = t.getStartState();
-                    String gamma = t.getAlphabet();
-                    String q_prime = t.getFinalState();
+                    if (bcTransBucket.getValue().containsKey(transRuleSig)) {
+                        for (int[] t : bcTransBucket.getValue().get(transRuleSig)) {
+                            int q_prime = t[2];
+                            int sig = transRule[0] + transRule[1];
 
-//                    util.Util.logStart();
-//                    System.out.println(t);
-//                    System.out.println(endConf);
-//                    util.Util.logEnd();
-                    if (stackElements.size() == 1) { // line 7: check the size of stacks, we only accept size 1
-                        if (q.equals(endConf.getState()) && // line 7: check belonging relationship
-                                gamma.equals(stackElements.get(0))) {
+                            if (transRule.length == 4) { // line 7: check the size of stacks, we only accept size 1
 
-                            Transition newTransition = new Transition( // line 8
-                                    transRule.getStartConf().getState(),
-                                    transRule.getStartConf().getStackElements().get(0),
-                                    q_prime);
+                                int[] newTransition = new int[]{transRule[0], transRule[1], q_prime};
 
-                            if (!bcTrans.getValue().contains(newTransition)) {
-                                bcTrans.getValue().add(newTransition);
+
+                                if (bcTransBucket.getValue().containsKey(sig)) {
+                                    bcTransBucket.getValue().get(sig).add(newTransition);
+                                } else {
+                                    Set<int[]> set = new ConcurrentSet<>();
+                                    set.add(newTransition);
+                                    bcTransBucket.getValue().put(sig, set);
+                                }
+                                bcExistFromStates.getValue().add(newTransition[0]);
                                 currSum.add(1);
-                            }
 
 
-                        }
-                    } else if (stackElements.size() == 2) { // line 9: check the size of stacks
-                        String gamma2 = stackElements.get(1);
+                            } else if (transRule.length == 5) { // line 9: check the size of stacks
+                                int gamma2 = transRule[4];
 
-                        if (q.equals(endConf.getState()) && // line 9: check belonging relationship
-                                gamma.equals(endConf.getStackElements().get(0))) {
+                                flatMapRet.add(new int[]{
+                                        transRule[0],
+                                        transRule[1],
+                                        q_prime,
+                                        gamma2
+                                });
 
-                            List<String> list = new ArrayList<>(1);
-                            list.add(gamma2);
+                                int tempSig = q_prime + gamma2;
+                                if (bcTransBucket.getValue().containsKey(tempSig)) {
+                                    for (int[] rel : bcTransBucket.getValue().get(tempSig)) { // line 11
 
-                            flatMapRet.add(new TransRule( // line 10
-                                    transRule.getStartConf(),
-                                    new Configuration(q_prime, list)
-                            ));
+                                        int[] newTransition = new int[]{transRule[0], transRule[1], rel[2]};
 
-                            for (Transition transition : bcTrans.getValue()) { // line 11: traverse rel
-                                if (transition.equals(q_prime, gamma2)) { // line 11: check belonging relationship
-
-                                    Transition newTransition = new Transition(
-                                            transRule.getStartConf().getState(),
-                                            transRule.getStartConf().getStackElements().get(0),
-                                            transition.getFinalState());
-
-                                    if (!bcTrans.getValue().contains(newTransition)) {
-                                        bcTrans.getValue().add(newTransition);
+                                        if (bcTransBucket.getValue().containsKey(sig)) {
+                                            bcTransBucket.getValue().get(sig).add(newTransition);
+                                        } else {
+                                            Set<int[]> set = new ConcurrentSet<>();
+                                            set.add(newTransition);
+                                            bcTransBucket.getValue().put(sig, set);
+                                        }
+                                        bcExistFromStates.getValue().add(newTransition[0]);
                                         currSum.add(1);
                                     }
                                 }
@@ -158,14 +152,16 @@ public class SplitDeltaSimplify {
             delta.count();
         }
 
+        Util.dumpToFile("output/" + inputFile + ".txt", Container.transfer(bcTransBucket.getValue().values()));
+        Util.logEnd();
+
         Date endDate = new Date();
+
         Util.logStart();
         Util.log("Start time: ", startDate.getTime());
         Util.log("End time: ", endDate.getTime());
         Util.log("Duration: ", endDate.getTime() - startDate.getTime());
         Util.log("Total iter times", iterTime.value());
-        Util.log("Size of result", bcTrans.getValue().size());
-        Util.dumpToFile("output/" + inputFile + ".txt", bcTrans.getValue());
-        Util.logEnd();
+        Util.log("Size of result", bcTransBucket.getValue().size());
     }
 }

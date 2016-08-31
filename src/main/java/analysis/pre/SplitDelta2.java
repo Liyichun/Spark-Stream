@@ -22,10 +22,11 @@ public class SplitDelta2 {
     public static void main(String[] args) {
 
 //        String inputFile = "plot_2";
-        String inputFile = "Mpds110_2";
+//        String inputFile = "Mpds110_2";
 //        String inputFile = "plot";
 //        String inputFile = "test";
-        Container container = Util.parseInputFile("example/" + inputFile + ".simplepds");
+        String inputFile = "paper";
+        Container container = Util.parseInputFile("example/" + inputFile + ".pds");
 
         SparkConf conf = new SparkConf().setAppName("SplitDelta2").setMaster("local[200]");
         JavaSparkContext sc = new JavaSparkContext(conf);
@@ -44,8 +45,6 @@ public class SplitDelta2 {
             trans.add(t);
         }
         Broadcast<Set<Transition>> bcTrans = sc.broadcast(trans);
-        Broadcast<Set<Transition>> bcRel = sc.broadcast(new ConcurrentSet<>());
-
 
         // find all <p, r> -> <p', e>  line2
 //        delta.foreach(transRule -> {
@@ -73,6 +72,7 @@ public class SplitDelta2 {
 //                System.out.println("enter flatmap: " + transRule);
 
                 List<TransRule> flatMapRet = new ArrayList<>();
+                flatMapRet.add(transRule);
 
                 Configuration endConf = transRule.getEndConf();
                 List<String> stackElements = endConf.getStackElements();
@@ -80,7 +80,7 @@ public class SplitDelta2 {
                 if (stackElements.size() == 0) {
                     Transition newTransition = transRule.toTransition();
                     for (Transition t : bcTrans.getValue()) {
-                        if (newTransition.getFinalState().equals(t.getStartState())) {
+                        if (newTransition.getFinalState().equals(t.getStartState()) && !bcTrans.getValue().contains(newTransition)) {
                             bcTrans.getValue().add(newTransition);
                             currSum.add(1);
                         }
@@ -145,7 +145,7 @@ public class SplitDelta2 {
                 }
                 return flatMapRet;
             });
-            delta.count();
+            System.out.println(delta.count());
         }
 
         Date endDate = new Date();
