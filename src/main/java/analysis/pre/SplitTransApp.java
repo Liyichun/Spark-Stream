@@ -1,3 +1,5 @@
+package analysis.pre;
+
 import antlr.Container;
 import org.apache.spark.Accumulator;
 import org.apache.spark.SparkConf;
@@ -7,27 +9,32 @@ import org.apache.spark.broadcast.Broadcast;
 import pds.Configuration;
 import pds.TransRule;
 import pds.Transition;
+import util.Util;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Vector;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+
 
 /**
  * Created by Cynric on 6/29/16.
+ * 将trans分散到RDD中, delta 和 rel 都放在广播变量里,
+ * 外层遍历trans,内层遍历delta和rel,
+ * 终止条件是trans大小为0
+ * 但是问题在于,trans互相独立,他们计算得到的结果无法及时共享
  */
-public class SplitTransLongwait {
+public class SplitTransApp {
     public static void main(String[] args) {
 
         Container container = Util.parseInputFile("example/paper.pds");
 
-        SparkConf conf = new SparkConf().setAppName("Simple Application").setMaster("local[4]");
+        SparkConf conf = new SparkConf().setAppName("SplitTransApp").setMaster("local[4]");
         JavaSparkContext sc = new JavaSparkContext(conf);
 
         JavaRDD<TransRule> delta = sc.parallelize(container.ruleSet);
 
-        Broadcast<List<Transition>> bcTrans = sc.broadcast(new Vector<>());
+        List<Transition> startTrans = Transition.getStartTrans(container.startConf);
+        Broadcast<List<Transition>> bcTrans = sc.broadcast(new Vector<>(startTrans));
+
         Broadcast<Map<Transition, Object>> bcRel = sc.broadcast(new ConcurrentHashMap<Transition, Object>());
         Broadcast<Map<TransRule, Object>> bcDelta = sc.broadcast(new ConcurrentHashMap<TransRule, Object>());
         Accumulator<Integer> iterTime = sc.accumulator(0);
@@ -41,7 +48,7 @@ public class SplitTransLongwait {
             bcDelta.getValue().put(transRule, new Object());
         });
 
-//        Util.log("Size of bcTrans", bcTrans.getValue().size());
+//        util.Util.log("Size of bcTrans", bcTrans.getValue().size());
 
         JavaRDD<Transition> trans = sc.parallelize(bcTrans.getValue());
         List<Transition> output;
@@ -100,26 +107,42 @@ public class SplitTransLongwait {
                         }
                     }
                 }
+//                synchronized (util.Util.class) {
+//                    util.Util.logStart();
+//                    util.Util.log("Input RDD", t.toString());
+//                    util.Util.log("Output RDD", flatMapRet);
+//                    util.Util.logEnd();
+//                }
                 return flatMapRet;
             }).distinct();
 
             output = trans.collect();
 
-//            Util.logStart();
-//            System.out.println("Iter " + iterTime.value() + " over ");
-//            Util.log("Size of Trans", output.size());
-//            Util.log("Content of Trans", output);
-//            Util.log("Size of Rel", bcRel.getValue().keySet().size());
-//            Util.log("Content of Rel", bcRel.getValue().keySet());
-//            Util.log("Size of Delta", bcDelta.getValue().keySet().size());
-//            Util.log("Content of Delta", bcDelta.getValue().keySet());
-//            Util.logEnd();
+            Util.logStart();
+            System.out.println("Iter " + iterTime.value() + " over ");
+            Util.log("Size of Trans", output.size());
+            Util.log("Content of Trans", output);
+            Util.log("Size of Rel", bcRel.getValue().keySet().size());
+            Util.log("Content of Rel", bcRel.getValue().keySet());
+            Util.log("Size of Delta", bcDelta.getValue().keySet().size());
+            Util.log("Content of Delta", bcDelta.getValue().keySet());
+            Util.logEnd();
 
             iterTime.add(1);
             if (iterTime.value() == 2) {
                 break;
             }
 
+//            if (iterTime.value() % 50 == 0) {
+//                util.Util.logStart();
+//                util.Util.log("Size of Trans", output.size());
+//                util.Util.log("Content of Trans", output);
+//                util.Util.logEnd();
+//
+//                if (iterTime.value() == 200) {
+//                    break;
+//                }
+//            }
         } while (output.size() > 0);
 
         Util.logStart();

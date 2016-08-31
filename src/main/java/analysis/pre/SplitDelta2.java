@@ -1,3 +1,5 @@
+package analysis.pre;
+
 import antlr.Container;
 import io.netty.util.internal.ConcurrentSet;
 import org.apache.spark.Accumulator;
@@ -5,8 +7,11 @@ import org.apache.spark.api.java.*;
 import org.apache.spark.SparkConf;
 import org.apache.spark.broadcast.Broadcast;
 import pds.*;
+import util.Util;
 
 import java.util.*;
+
+import static com.sun.tools.doclint.Entity.delta;
 
 /**
  * Created by Cynric on 5/17/16.
@@ -19,8 +24,9 @@ public class SplitDelta2 {
     public static void main(String[] args) {
 
 //        String inputFile = "plot_2";
-//        String inputFile = "Mpds110_2";
-        String inputFile = "plot";
+        String inputFile = "Mpds110_2";
+//        String inputFile = "plot";
+//        String inputFile = "test";
         Container container = Util.parseInputFile("example/" + inputFile + ".pds");
 
         SparkConf conf = new SparkConf().setAppName("SplitDelta2").setMaster("local[200]");
@@ -44,22 +50,24 @@ public class SplitDelta2 {
 
 
         // find all <p, r> -> <p', e>  line2
-        delta.foreach(transRule -> {
-            if (transRule.getEndConf().getStackElements().size() == 0) {
-                Transition transition = transRule.toTransition();
-                bcTrans.getValue().add(transition);
-            }
-        });
+//        delta.foreach(transRule -> {
+//            if (transRule.getEndConf().getStackElements().size() == 0) {
+//                Transition transition = transRule.toTransition();
+//                if (!transition.getFinalState().equals(container.startConf.getState())) {
+//                    bcTrans.getValue().add(transition);
+//                }
+//            }
+//        });
 
         Date startDate = new Date();
 
         while (!lastSum.value().equals(currSum.value())) {   // line 3
             iterTime.add(1);
-//            Util.logStart();
-//            Util.log("Iter time: ", iterTime.value());
-//            Util.log("size of last", lastSum.value());
-//            Util.log("size of current", currSum.value());
-//            Util.logEnd();
+//            util.Util.logStart();
+//            util.Util.log("Iter time: ", iterTime.value());
+//            util.Util.log("size of last", lastSum.value());
+//            util.Util.log("size of current", currSum.value());
+//            util.Util.logEnd();
 
             lastSum.setValue(currSum.value());
 
@@ -71,17 +79,25 @@ public class SplitDelta2 {
                 Configuration endConf = transRule.getEndConf();
                 List<String> stackElements = endConf.getStackElements();
 
+                if (stackElements.size() == 0) {
+                    Transition newTransition = transRule.toTransition();
+                    for (Transition t : bcTrans.getValue()) {
+                        if (newTransition.getFinalState().equals(t.getStartState())) {
+                            bcTrans.getValue().add(newTransition);
+                            currSum.add(1);
+                        }
+                    }
+                }
 
                 for (Transition t : bcTrans.getValue()) {
                     String q = t.getStartState();
                     String gamma = t.getAlphabet();
                     String q_prime = t.getFinalState();
 
-//                    Util.logStart();
+//                    util.Util.logStart();
 //                    System.out.println(t);
 //                    System.out.println(endConf);
-//                    Util.logEnd();
-
+//                    util.Util.logEnd();
                     if (stackElements.size() == 1) { // line 7: check the size of stacks, we only accept size 1
                         if (q.equals(endConf.getState()) && // line 7: check belonging relationship
                                 gamma.equals(stackElements.get(0))) {

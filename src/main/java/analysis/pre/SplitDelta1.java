@@ -1,3 +1,5 @@
+package analysis.pre;
+
 import antlr.Container;
 import io.netty.util.internal.ConcurrentSet;
 import org.apache.spark.Accumulator;
@@ -5,6 +7,7 @@ import org.apache.spark.api.java.*;
 import org.apache.spark.SparkConf;
 import org.apache.spark.broadcast.Broadcast;
 import pds.*;
+import util.Util;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -20,7 +23,8 @@ public class SplitDelta1 {
 
     public static void main(String[] args) {
 
-        Container container = Util.parseInputFile("example/paper.pds");
+        Container container =
+                Util.parseInputFile("example/paper.pds");
 
         SparkConf conf = new SparkConf().setAppName("SplitDelta1").setMaster("local[4]");
         JavaSparkContext sc = new JavaSparkContext(conf);
@@ -105,7 +109,7 @@ public class SplitDelta1 {
         }
 
         Util.logStart();
-//        Util.log("Total iter times", iterTime.value());
+//        util.Util.log("Total iter times", iterTime.value());
         Util.log("Size of result", bcRel.getValue().size());
         Util.log("Content of result", bcRel.getValue());
         Util.logEnd();
