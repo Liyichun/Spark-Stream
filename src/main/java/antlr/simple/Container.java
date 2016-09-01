@@ -5,6 +5,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 import pds.simple.TransRule;
 import pds.simple.Transition;
+import scala.Tuple2;
 
 import java.io.IOException;
 import java.util.*;
@@ -49,25 +50,37 @@ public class Container {
         return container;
     }
 
-    public void printRuleSet() {
-        System.out.println("------ START PRINT INPUT ------");
-        for (int[] transRule: this.ruleSet) {
-            System.out.println(TransRule.toString(transRule));
-        }
-        System.out.println("------ END PRINT INPUT ------");
-    }
-
     public static String getString(int hashcode) {
         return dictionary.get(hashcode);
     }
 
-    public static List<String> transfer(Collection<Set<int[]>> collection) {
+    public static  List<String> transfer(Collection<int[]> collection) {
         List<String> ret = new ArrayList<>();
-        for (Set<int[]> set: collection) {
-            for (int[] trans : set) {
+        for (int[] t: collection) {
+            ret.add(TransRule.toString(t));
+        }
+        return ret;
+    }
+
+    public static List<String> transfer(Map<Tuple2, Set<Integer>> map) {
+        List<String> ret = new ArrayList<>();
+        for (Tuple2 tuple : map.keySet()) {
+            int[] trans = new int[3];
+            trans[0] = (int) tuple._1;
+            trans[1] = (int) tuple._2;
+            for (int q : map.get(tuple)) {
+                trans[2] = q;
                 ret.add(Transition.toString(trans));
             }
         }
         return ret;
+    }
+
+    public void printRuleSet() {
+        System.out.println("------ START PRINT INPUT ------");
+        for (int[] transRule : this.ruleSet) {
+            System.out.println(TransRule.toString(transRule));
+        }
+        System.out.println("------ END PRINT INPUT ------");
     }
 }

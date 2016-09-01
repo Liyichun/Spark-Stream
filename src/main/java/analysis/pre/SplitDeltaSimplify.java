@@ -8,6 +8,7 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.broadcast.Broadcast;
 import pds.simple.*;
+import scala.Tuple2;
 import util.Util;
 
 import java.util.*;
@@ -25,13 +26,19 @@ public class SplitDeltaSimplify {
     public static void main(String[] args) {
 
 //        String inputFile = "plot_2";
+//        String inputFile = "Mpds";
 //        String inputFile = "Mpds110_2";
-        String inputFile = "plot";
+//        String inputFile = "plot";
+        String inputFile = "paper";
 //        String inputFile = "test";
+//        String inputFile = "test1";
+//        String inputFile = "test2";
+//        String inputFile = "test3";
         Container container = Container.parseInputFile("example/" + inputFile + ".pds");
 
-        SparkConf conf = new SparkConf().setAppName("SplitDelta2").setMaster("local[4]");
+        SparkConf conf = new SparkConf().setAppName("SplitDelta2").setMaster("local[200]");
         JavaSparkContext sc = new JavaSparkContext(conf);
+        int finalState = "__s__".hashCode();
 
 //        container.printRuleSet(); // check
 
@@ -44,124 +51,110 @@ public class SplitDeltaSimplify {
         int[] startConfg = container.startConf;
         int[][] startTrans = Transition.getStartTrans(startConfg);
 
-        Map<Integer, Set<int[]>> transBucket = new ConcurrentHashMap<>();
+        Map<Tuple2, Set<Integer>> transBucket = new ConcurrentHashMap<>();
         Set<Integer> existFromStates = new ConcurrentSet<>();
 
         for (int[] t : startTrans) {
-            int sig = t[0] + t[1]; // for a transition (q, r, q'), we put it into the bucket with (q, r)
+            Tuple2 sig = new Tuple2(t[0], t[1]); // for a transition (q, r, q'), we put it into the bucket with (q, r)
             if (transBucket.containsKey(sig)) {
-                transBucket.get(sig).add(t);
+                transBucket.get(sig).add(t[2]);
             } else {
-                Set<int[]> set = new ConcurrentSet<>();
-                set.add(t);
+                Set<Integer> set = new ConcurrentSet<>();
+                set.add(t[2]);
                 transBucket.put(sig, set);
                 existFromStates.add(t[0]);
             }
         }
-        Broadcast<Map<Integer, Set<int[]>>> bcTransBucket = sc.broadcast(transBucket);
+        Broadcast<Map<Tuple2, Set<Integer>>> bcTransBucket = sc.broadcast(transBucket);
         Broadcast<Set<Integer>> bcExistFromStates = sc.broadcast(existFromStates);
 
         Date startDate = new Date();
 
         while (!lastSum.value().equals(currSum.value())) {   // line 3
+//            Util.logStart();
             iterTime.add(1);
-            util.Util.logStart();
-            util.Util.log("Iter time: ", iterTime.value());
-            util.Util.log("size of last", lastSum.value());
-            util.Util.log("size of current", currSum.value());
-            util.Util.logEnd();
 
             lastSum.setValue(currSum.value());
 
             delta = delta.flatMap(transRule -> {
                 List<int[]> flatMapRet = new ArrayList<>();
+//                flatMapRet.add(transRule);
 
                 // epsilon transRule
                 if (transRule.length == 3) {
-                    int[] newTransition = TransRule.toTransition(transRule);
-                    int sig = newTransition[0] + newTransition[1]; // for a transition (q, r, q'), we put it into the bucket with (q, r)
+                    Tuple2<Integer, Integer> sig = new Tuple2(transRule[0], transRule[1]); // for a transition (q, r, q'), we put it into the bucket with (q, r)
 
-                    if (existFromStates.contains(newTransition[2])) { // 新规则的finalState在已有规则的startState中
-                        if (bcTransBucket.getValue().containsKey(sig)) {
-                            bcTransBucket.getValue().get(sig).add(newTransition);
-                        } else {
-                            Set<int[]> set = new ConcurrentSet<int[]>();
-                            set.add(newTransition);
-                            bcTransBucket.getValue().put(sig, set);
-                        }
-                        bcExistFromStates.getValue().add(newTransition[0]);
-                        currSum.add(1);
+                    if (bcExistFromStates.getValue().contains(transRule[2])) { // 若新规则的finalState在已有规则的startState中,则添加这条新规则
+                        addTransition(bcTransBucket, bcExistFromStates, currSum, sig, transRule[2]);
+//                        flatMapRet.remove(transRule);
                     }
                 } else {
-                    int transRuleSig = transRule[2] + transRule[3];
+                    Tuple2<Integer, Integer> q_gamma_sig = new Tuple2(transRule[2], transRule[3]);
 
-                    if (bcTransBucket.getValue().containsKey(transRuleSig)) {
-                        for (int[] t : bcTransBucket.getValue().get(transRuleSig)) {
-                            int q_prime = t[2];
-                            int sig = transRule[0] + transRule[1];
+                    if (bcTransBucket.getValue().containsKey(q_gamma_sig)) {
+                        for (int q_prime : bcTransBucket.getValue().get(q_gamma_sig)) {
+                            Tuple2<Integer, Integer> sig = new Tuple2(transRule[0], transRule[1]);
 
                             if (transRule.length == 4) { // line 7: check the size of stacks, we only accept size 1
-
-                                int[] newTransition = new int[]{transRule[0], transRule[1], q_prime};
-
-
-                                if (bcTransBucket.getValue().containsKey(sig)) {
-                                    bcTransBucket.getValue().get(sig).add(newTransition);
+                                addTransition(bcTransBucket, bcExistFromStates, currSum, sig, q_prime);
+                            } else { // line 9: check the size of stacks
+                                if (q_prime == finalState) {
+                                    addTransition(bcTransBucket, bcExistFromStates, currSum, sig, q_prime);
                                 } else {
-                                    Set<int[]> set = new ConcurrentSet<>();
-                                    set.add(newTransition);
-                                    bcTransBucket.getValue().put(sig, set);
-                                }
-                                bcExistFromStates.getValue().add(newTransition[0]);
-                                currSum.add(1);
+                                    int gamma2 = transRule[4];
 
+                                    flatMapRet.add(new int[]{
+                                            transRule[0],
+                                            transRule[1],
+                                            q_prime,
+                                            gamma2
+                                    });
 
-                            } else if (transRule.length == 5) { // line 9: check the size of stacks
-                                int gamma2 = transRule[4];
+                                    Tuple2<Integer, Integer> tempSig = new Tuple2(q_prime, gamma2);
 
-                                flatMapRet.add(new int[]{
-                                        transRule[0],
-                                        transRule[1],
-                                        q_prime,
-                                        gamma2
-                                });
-
-                                int tempSig = q_prime + gamma2;
-                                if (bcTransBucket.getValue().containsKey(tempSig)) {
-                                    for (int[] rel : bcTransBucket.getValue().get(tempSig)) { // line 11
-
-                                        int[] newTransition = new int[]{transRule[0], transRule[1], rel[2]};
-
-                                        if (bcTransBucket.getValue().containsKey(sig)) {
-                                            bcTransBucket.getValue().get(sig).add(newTransition);
-                                        } else {
-                                            Set<int[]> set = new ConcurrentSet<>();
-                                            set.add(newTransition);
-                                            bcTransBucket.getValue().put(sig, set);
+                                    if (bcTransBucket.getValue().containsKey(tempSig)) {
+                                        for (int q_prime2 : bcTransBucket.getValue().get(tempSig)) { // line 11
+                                            addTransition(bcTransBucket, bcExistFromStates, currSum, tempSig, q_prime2);
                                         }
-                                        bcExistFromStates.getValue().add(newTransition[0]);
-                                        currSum.add(1);
                                     }
                                 }
                             }
                         }
                     }
                 }
+//                System.out.println(TransRule.toString(transRule) + " ---> " + Container.transfer(flatMapRet).toString());
                 return flatMapRet;
             });
             delta.count();
         }
 
-        Util.dumpToFile("output/" + inputFile + ".txt", Container.transfer(bcTransBucket.getValue().values()));
-        Util.logEnd();
-
         Date endDate = new Date();
 
         Util.logStart();
-        Util.log("Start time: ", startDate.getTime());
-        Util.log("End time: ", endDate.getTime());
-        Util.log("Duration: ", endDate.getTime() - startDate.getTime());
+//        Util.log("Start time: ", startDate.getTime());
+//        Util.log("End time: ", endDate.getTime());
+        Util.log("Duration: ", endDate.getTime() - startDate.getTime() + "ms");
         Util.log("Total iter times", iterTime.value());
-        Util.log("Size of result", bcTransBucket.getValue().size());
+        Util.dumpToFile("output/" + inputFile + ".txt", Container.transfer(bcTransBucket.getValue()));
+        Util.logEnd();
+    }
+
+    public static void addTransition(Broadcast<Map<Tuple2, Set<Integer>>> bcTransBucket,
+                                     Broadcast<Set<Integer>> bcExistFromStates,
+                                     Accumulator currSum, Tuple2<Integer, Integer> sig, int toState) {
+        if (bcTransBucket.getValue().containsKey(sig)) {
+            if (!bcTransBucket.getValue().get(sig).contains(toState)) {
+                bcTransBucket.getValue().get(sig).add(toState);
+                bcExistFromStates.getValue().add(sig._1);
+                currSum.add(1);
+            }
+        } else {
+            Set<Integer> set = new ConcurrentSet<>();
+            set.add(toState);
+            bcTransBucket.getValue().put(sig, set);
+            bcExistFromStates.getValue().add(sig._1);
+            currSum.add(1);
+        }
+
     }
 }

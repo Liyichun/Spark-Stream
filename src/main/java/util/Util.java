@@ -7,12 +7,16 @@ import antlr.PdsParser;
 import org.antlr.v4.runtime.ANTLRFileStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
+import scala.Tuple2;
 
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -48,6 +52,22 @@ public class Util {
         }
 
         System.out.println("VALUE: " + contentBuilder.toString());
+    }
+
+    public static void logIndexSet(List<int[]> list) {
+        List<String> temp = antlr.simple.Container.transfer(list);
+        System.out.println("Size of Delta: " + list.size());
+        for (String s : temp) {
+            System.out.println(s);
+        }
+    }
+
+    public static void logBucket(Map<Tuple2, Set<Integer>> collection) {
+        List<String> list = antlr.simple.Container.transfer(collection);
+        System.out.println("Size of Bucket: " + list.size());
+        for (String s : list) {
+            System.out.println(s);
+        }
     }
 
     public static <T> void dumpToFile(String filename, Collection<T> iter) {
