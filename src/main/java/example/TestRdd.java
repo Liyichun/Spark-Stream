@@ -25,26 +25,58 @@ public class TestRdd {
         JavaSparkContext sc = new JavaSparkContext(conf);
 
         // 从内存集合中构造RDD
-        JavaRDD<Integer> integers = sc.parallelize(Arrays.asList(1, 2, 3, 4, 5, 4, 3, 2, 1));
+        JavaRDD<Integer> integers = sc.parallelize(Arrays.asList(1, 2));
         JavaRDD<Integer> integers2 = sc.parallelize(Arrays.asList(1, 3, 5, 7));
         JavaRDD<String> strings = sc.parallelize(Arrays.asList("a b", "c d", "e f", "g h"));
 
 
         // 该测试表明,一个rdd的transformation内部无法再调用其他的transformation。
-        List output =
-                integers.flatMap(i -> {
-                    List<Integer> ret = new ArrayList<>();
-                    integers2.foreach(i2 -> {
-                        if (i == i2) {
-                            ret.add(i2);
-                        }
-                    });
+//        List output =
+//                integers.flatMap(i -> {
+//                    List<Integer> ret = new ArrayList<>();
+//                    integers2.map(i2 -> {
+//                        if (i == i2) {
+//                            ret.add(i2);
+//                        }
+//                        return i2;
+//                    });
+//
+//                    return ret;
+//                }).collect();
+//
+//        System.out.println(output.size());
+//        System.out.println(output.toString());
 
-                    return ret;
-                }).collect();
+        JavaRDD<int[]> intArray = sc.parallelize(Arrays.asList(
+                new int[]{1, 2, 3, 4},
+                new int[]{1, 2, 3, 4}
+        ));
+//
+        JavaPairRDD<Tuple2, int[]> pairRDD = intArray.mapToPair(a -> {
+            Tuple2 sig = new Tuple2(a[2], a[3]);
+            return new Tuple2<>(sig, a);
+        });
 
-        System.out.println(output.size());
-        System.out.println(output.toString());
+        pairRDD = pairRDD.flatMapToPair(tuple -> {
+            System.out.println(tuple.toString());
+            List<Tuple2<Tuple2, int[]>> ret = new ArrayList<>();
+
+            return ret;
+        });
+
+//        for (int i = 0; i < 5; i ++ ) {
+//            integers = integers.flatMap(i1 -> {
+//                List<Integer> ret = new ArrayList();
+//                ret.add(i1);
+//                if (i1 == 2) {
+//                    ret.add(i1);
+//                }
+//                return ret;
+//            });
+//            integers.count();
+//            System.out.println(integers.count());
+//        }
+
 
     }
 }

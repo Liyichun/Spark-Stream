@@ -4,6 +4,7 @@ import antlr.simple.*;
 import io.netty.util.internal.ConcurrentSet;
 import org.apache.spark.Accumulator;
 import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.broadcast.Broadcast;
@@ -14,15 +15,16 @@ import util.Util;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-
 /**
  * Created by Cynric on 5/17/16.
  * 将Delta分散到RDD中, trans和rel放在广播变量中,
  * 在外层遍历Delat的RDD,在内层遍历trans的广播变量,将新的结果追加到trans中
  * 终止条件是trans的size不再增长
  * 将所有的string都映射成int,并且抛弃了面向对象,使用最基础的array和tuple来保存数据
+ *
+ * 尝试使用key - value pair来保存delta,看看会不会更快。
  */
-public class SplitDeltaSimplify {
+public class SplitDeltaSimplify2 {
 
     public static void main(String[] args) {
 
@@ -68,6 +70,22 @@ public class SplitDeltaSimplify {
         Broadcast<Set<Integer>> bcExistFromStates = sc.broadcast(existFromStates);
 
         JavaRDD<int[]> delta = sc.parallelize(container.ruleSet);
+        JavaPairRDD<Tuple2, int[]> deltaPair = delta.mapToPair((int[] transRule) -> {
+            Tuple2 q_gamma_sig;
+            int[] value;
+            if (transRule.length == 3) {
+                q_gamma_sig = new Tuple2(transRule[2], null);         // p1 <r1> --> q <>       mapTo   ((q, null), [p1, r1])
+                value = new int[]{transRule[0], transRule[1]};
+            } else if (transRule.length == 4) {
+                q_gamma_sig = new Tuple2(transRule[2], transRule[3]); // p1 <r1> --> q <r>      mapTO   ((q, r), [p1, r1])
+                value = new int[]{transRule[0], transRule[1]};
+            } else {
+                q_gamma_sig = new Tuple2(transRule[2], transRule[3]); // p1 <r1> --> q <r r2>   mapTO   ((q, r), [p1, r1, r2])
+                value = new int[]{transRule[0], transRule[1], transRule[2]};
+            }
+            return new Tuple2<>(q_gamma_sig, value);
+        });
+
 
         Date startDate = new Date();
 
@@ -77,41 +95,40 @@ public class SplitDeltaSimplify {
 
             lastSum.setValue(currSum.value());
 
-            delta = delta.flatMap(transRule -> {
-                List<int[]> flatMapRet = new ArrayList<>();
-                flatMapRet.add(transRule);
+            deltaPair = deltaPair.flatMapToPair((originTuple) -> {
+                Tuple2 q_gamma_sig = originTuple._1;
+                int[] value = originTuple._2;
+
+                List<Tuple2<Tuple2, int[]>> flatMapRet = new ArrayList<>();
+                flatMapRet.add(originTuple);
 
                 // epsilon transRule
-                if (transRule.length == 3) {
-                    Tuple2<Integer, Integer> sig = new Tuple2(transRule[0], transRule[1]); // for a transition (q, r, q'), we put it into the bucket with (q, r)
-
-                    if (bcExistFromStates.getValue().contains(transRule[2])) { // 若新规则的finalState在已有规则的startState中,则添加这条新规则
-                        addTransition(bcTransBucket, bcExistFromStates, currSum, sig, transRule[2]);
-                        flatMapRet.remove(transRule);
+                if (q_gamma_sig._2 == null) {
+                    Tuple2<Integer, Integer> sig = new Tuple2<>(value[0], value[1]);
+                    if (bcExistFromStates.getValue().contains(value[0])) { // 若新规则的finalState在已有规则的startState中,则添加这条新规则
+                        addTransition(bcTransBucket, bcExistFromStates, currSum, sig, (Integer) q_gamma_sig._1);
+                        flatMapRet.remove(originTuple);
                     }
                 } else {
-                    Tuple2<Integer, Integer> q_gamma_sig = new Tuple2(transRule[2], transRule[3]);
-
                     if (bcTransBucket.getValue().containsKey(q_gamma_sig)) {
-                        Tuple2<Integer, Integer> sig = new Tuple2(transRule[0], transRule[1]);
-                        for (int q_prime : bcTransBucket.getValue().get(q_gamma_sig)) {
+                        Tuple2<Integer, Integer> sig = new Tuple2(value[0], value[1]);
 
-                            if (transRule.length == 4) { // line 7: check the size of stacks, we only accept size 1
+                        for (int q_prime : bcTransBucket.getValue().get(q_gamma_sig)) {
+                            if (value.length == 2) { // line 7: check the size of stacks, we only accept size 1
                                 addTransition(bcTransBucket, bcExistFromStates, currSum, sig, q_prime);
                             } else { // line 9: check the size of stacks
                                 if (q_prime == finalState) {
                                     addTransition(bcTransBucket, bcExistFromStates, currSum, sig, q_prime);
                                 } else {
-                                    int gamma2 = transRule[4];
+                                    int gamma2 = value[2];
 
-                                    flatMapRet.add(new int[]{
-                                            transRule[0],
-                                            transRule[1],
-                                            q_prime,
-                                            gamma2
-                                    });
 
                                     Tuple2<Integer, Integer> tempSig = new Tuple2(q_prime, gamma2);
+
+                                    flatMapRet.add(new Tuple2<>(tempSig, new int[]{
+                                            value[0],
+                                            value[1]
+                                    }));
 
                                     if (bcTransBucket.getValue().containsKey(tempSig)) {
                                         for (int q_prime2 : bcTransBucket.getValue().get(tempSig)) { // line 11
@@ -123,11 +140,9 @@ public class SplitDeltaSimplify {
                         }
                     }
                 }
-//                System.out.println(TransRule.toString(transRule) + " ---> " + Container.transfer(flatMapRet).toString());
                 return flatMapRet;
             });
-            delta.count();
-//            System.out.println(delta.count());
+            deltaPair.count();
         }
 
         Date endDate = new Date();

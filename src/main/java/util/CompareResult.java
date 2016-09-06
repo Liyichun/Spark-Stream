@@ -18,7 +18,7 @@ public class CompareResult {
     static Pattern transPattern = Pattern.compile("(\\w*) -\\[(\\w*)\\]-> (\\w*)");
 
     public static void main(String[] args) {
-        compare("test1.txt");
+        compare("plot.txt");
 
     }
 
