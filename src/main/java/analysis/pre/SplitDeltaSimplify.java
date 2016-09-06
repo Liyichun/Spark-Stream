@@ -39,7 +39,7 @@ public class SplitDeltaSimplify {
 
         SparkConf conf = new SparkConf().setAppName("SplitDelta2").setMaster("local[4]");
         JavaSparkContext sc = new JavaSparkContext(conf);
-        int finalState = "__s__".hashCode();
+        int finalState = 1;
 
 //        container.printRuleSet(); // check
 

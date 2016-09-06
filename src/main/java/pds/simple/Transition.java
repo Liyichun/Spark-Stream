@@ -26,18 +26,20 @@ public class Transition implements Serializable {
 
     public static int[][] getStartTrans(int[] startConf) {
         int[][] ret = new int[startConf.length - 1][3];
-        ret[0] = new int[]{startConf[0], startConf[1], "__s__".hashCode()};
-        Container.registerString("__s__".hashCode(), "__s__");
+        ret[0] = new int[]{startConf[0], startConf[1], 1};
+        int lastToStateCode = 1;
 
         for (int i = 1; i < startConf.length - 1; i++) {
             String toState = "__s" + (i + 1) + "__";
-            Container.registerString(toState.hashCode(), toState);
+            int toStateCode = Container.getCount();
+            Container.registerString(toStateCode, toState);
 
             ret[i] = new int[]{
-                    ("__s" + i + "__").hashCode(),
+                    lastToStateCode,
                     startConf[i + 1],
-                    toState.hashCode()
+                    toStateCode
             };
+            lastToStateCode = toStateCode;
         }
         return ret;
     }

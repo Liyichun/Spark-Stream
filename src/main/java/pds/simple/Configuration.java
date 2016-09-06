@@ -16,22 +16,23 @@ public class Configuration implements Serializable {
 
     public static int[] fromAntlrContext(PdsParser.ConfContext confContext) {
         String state = confContext.getChild(0).getText();
-        Container.registerString(state.hashCode(), state);
+        int stateCode = Container.getCount();
+        Container.registerString(stateCode, state);
 
         PdsParser.StackContext stackContext = (PdsParser.StackContext) confContext.getChild(1);
         PdsParser.Stack_contentContext stackElemContext = (PdsParser.Stack_contentContext) stackContext.getChild(1);
 
         int stackCount = stackElemContext.getChildCount();
         int[] ret = new int[1 + stackCount];
-        ret[0] = state.hashCode();
+        ret[0] = stateCode;
 
         for (int i = 0; i < stackCount; i++) {
             String stack = stackElemContext.getChild(i).getText();
-            Container.registerString(stack.hashCode(), stack);
+            int stackCode = Container.getCount();
+            Container.registerString(stackCode, stack);
 
-            ret[i + 1] = stack.hashCode();
+            ret[i + 1] = stackCode;
         }
-
         return ret;
     }
 

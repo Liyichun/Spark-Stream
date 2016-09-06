@@ -15,15 +15,25 @@ import java.util.*;
  */
 public class Container {
     public static Map<Integer, String> dictionary = new HashMap<>(); // 将字符串的hashcode和字符串本身做个映射
+    public static int count = 1;
+
+    static {
+        registerString(1, "__s__");
+    }
+
     public int[] startConf;
     public List<int[]> ruleSet = new ArrayList<>();
     public int[] startConfArray; // [ fromState, fromStack, toState, toStack ]
     public int[][] ruleArray; // [ [fromState, fromStack, toState, toStack1, toStack2] ]
 
-    public static void registerString(int hashcode, String s) {
-        if (!dictionary.containsKey(hashcode)) {
-            dictionary.put(s.hashCode(), s);
+    public static void registerString(int code, String s) {
+        if (!dictionary.containsKey(code)) {
+            dictionary.put(code, s);
         }
+    }
+
+    public static int getCount() {
+        return ++count;
     }
 
     public static Container parseInputFile(String filename) {
@@ -54,9 +64,9 @@ public class Container {
         return dictionary.get(hashcode);
     }
 
-    public static  List<String> transfer(Collection<int[]> collection) {
+    public static List<String> transfer(Collection<int[]> collection) {
         List<String> ret = new ArrayList<>();
-        for (int[] t: collection) {
+        for (int[] t : collection) {
             ret.add(TransRule.toString(t));
         }
         return ret;
