@@ -6,6 +6,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import pds.simple.TransRule;
 import pds.simple.Transition;
 import scala.Tuple2;
+import util.Cantor;
 
 import java.io.IOException;
 import java.util.*;
@@ -83,6 +84,21 @@ public class Container {
         List<String> ret = new ArrayList<>();
         for (int[] t : collection) {
             ret.add(TransRule.toString(t));
+        }
+        return ret;
+    }
+
+    public static List<String> transferCantor(Map<Integer, Set<Integer>> map) {
+        List<String> ret = new ArrayList<>();
+        for (int sig : map.keySet()) {
+            int[] pair = Cantor.dePair(sig);
+            int[] trans = new int[3];
+            trans[0] = pair[0];
+            trans[1] = pair[1];
+            for (int q : map.get(sig)) {
+                trans[2] = q;
+                ret.add(Transition.toString(trans));
+            }
         }
         return ret;
     }
