@@ -26,13 +26,12 @@ public class Transition implements Serializable {
 
     public static int[][] getStartTrans(int[] startConf) {
         int[][] ret = new int[startConf.length - 1][3];
-        ret[0] = new int[]{startConf[0], startConf[1], 1};
-        int lastToStateCode = 1;
+        int lastToStateCode = Container.getCode("__s__");
+        ret[0] = new int[]{startConf[0], startConf[1], lastToStateCode};
 
         for (int i = 1; i < startConf.length - 1; i++) {
             String toState = "__s" + (i + 1) + "__";
-            int toStateCode = Container.getCount();
-            Container.registerString(toStateCode, toState);
+            int toStateCode = Container.getCode(toState);
 
             ret[i] = new int[]{
                     lastToStateCode,
