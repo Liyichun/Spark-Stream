@@ -28,8 +28,8 @@ public class SplitDeltaSimplifyCantor {
 
 //        String inputFile = "plot_2";
 //        String inputFile = "Mpds";
-//        String inputFile = "Mpds110_2";
-        String inputFile = "plot";
+        String inputFile = "Mpds110_2";
+//        String inputFile = "plot";
 //        String inputFile = "paper";
 //        String inputFile = "test";
 //        String inputFile = "test1";
@@ -37,7 +37,7 @@ public class SplitDeltaSimplifyCantor {
 //        String inputFile = "test3";
         Container container = Container.parseInputFile("example/" + inputFile + ".pds");
 
-        SparkConf conf = new SparkConf().setAppName("SplitDelta2").setMaster("local[4]");
+        SparkConf conf = new SparkConf().setAppName("SplitDeltaSimplifyCantor").setMaster("local[4]");
         JavaSparkContext sc = new JavaSparkContext(conf);
         int finalState = "__s__".hashCode();
 
