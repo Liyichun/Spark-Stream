@@ -1,7 +1,7 @@
 package rdd;
 
 import org.apache.spark.AccumulableParam;
-import pds.Transition;
+import model.pds.Transition;
 
 import java.util.HashSet;
 import java.util.Set;

@@ -1,4 +1,4 @@
-package analysis.pre;
+package pre.pds;
 
 import antlr.Container;
 import org.apache.spark.Accumulator;
@@ -6,9 +6,9 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.broadcast.Broadcast;
-import pds.Configuration;
-import pds.TransRule;
-import pds.Transition;
+import model.pds.Configuration;
+import model.pds.TransRule;
+import model.pds.Transition;
 import util.Util;
 
 import java.util.*;

@@ -1,4 +1,4 @@
-package pds;
+package model.pds;
 
 import antlr.PdsParser;
 

@@ -1,4 +1,4 @@
-package analysis.pre;
+package pre.pds;
 
 import antlr.simple.*;
 import io.netty.util.internal.ConcurrentSet;
@@ -8,7 +8,7 @@ import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.broadcast.Broadcast;
-import pds.simple.*;
+import model.pds.simple.*;
 import scala.Tuple2;
 import util.Util;
 
@@ -21,7 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * 在外层遍历Delat的RDD,在内层遍历trans的广播变量,将新的结果追加到trans中
  * 终止条件是trans的size不再增长
  * 将所有的string都映射成int,并且抛弃了面向对象,使用最基础的array和tuple来保存数据
- *
+ * <p>
  * 尝试使用key - value pair来保存delta,看看会不会更快。
  */
 public class SplitDeltaSimplify2 {

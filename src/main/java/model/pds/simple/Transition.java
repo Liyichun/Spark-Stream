@@ -1,4 +1,4 @@
-package pds.simple;
+package model.pds.simple;
 
 import antlr.simple.Container;
 

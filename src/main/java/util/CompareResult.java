@@ -1,6 +1,6 @@
 package util;
 
-import pds.Transition;
+import model.pds.Transition;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;

@@ -1,7 +1,7 @@
 package antlr;
 
-import pds.Configuration;
-import pds.TransRule;
+import model.pds.Configuration;
+import model.pds.TransRule;
 
 import java.util.ArrayList;
 import java.util.List;

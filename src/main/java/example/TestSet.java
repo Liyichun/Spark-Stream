@@ -1,8 +1,6 @@
 package example;
 
-import pds.Configuration;
-import pds.TransRule;
-import pds.Transition;
+import model.pds.*;
 
 import java.util.*;
 

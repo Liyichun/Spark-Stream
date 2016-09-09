@@ -1,4 +1,4 @@
-package analysis.pre;
+package pre.pds;
 
 import antlr.simple.Container;
 import io.netty.util.internal.ConcurrentSet;
@@ -7,7 +7,7 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.broadcast.Broadcast;
-import pds.simple.Transition;
+import model.pds.simple.*;
 import util.Cantor;
 import util.Util;
 
@@ -28,8 +28,8 @@ public class SplitDeltaSimplifyCantor {
 
 //        String inputFile = "plot_2";
 //        String inputFile = "Mpds";
-        String inputFile = "Mpds110_2";
-//        String inputFile = "plot";
+//        String inputFile = "Mpds110_2";
+        String inputFile = "plot";
 //        String inputFile = "paper";
 //        String inputFile = "test";
 //        String inputFile = "test1";

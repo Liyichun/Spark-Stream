@@ -3,8 +3,8 @@ package antlr.simple;
 import org.antlr.v4.runtime.ANTLRFileStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
-import pds.simple.TransRule;
-import pds.simple.Transition;
+import model.pds.simple.TransRule;
+import model.pds.simple.Transition;
 import scala.Tuple2;
 import util.Cantor;
 
