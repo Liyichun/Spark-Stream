@@ -1,4 +1,4 @@
-package model.pds.simple;
+package model.dpn;
 
 import util.Symbol;
 
@@ -43,31 +43,8 @@ public class Transition implements Serializable {
         return ret;
     }
 
-//    @Override
-//    public boolean equals(Object obj) {
-//        if (obj == null || obj.getClass() != this.getClass()) {
-//            return false;
-//        } else {
-//            Transition t = (Transition) obj;
-//            return this.startState.equals(t.startState) && this.finalState.equals(t.finalState) && this.alphabet.equals(t.alphabet);
-//        }
-//    }
+//    public static int[] fromContext() {
 //
-//    @Override
-//    public int hashCode() {
-//        int result = 17;
-//        result = 37 * result + startState.hashCode();
-//        result = 37 * result + alphabet.hashCode();
-//        result = 37 * result + finalState.hashCode();
-//        return result;
-//    }
-
-//    public boolean equals(String startState, String alphabet, String finalState) {
-//        return this.startState.equals(startState) && this.finalState.equals(finalState) && this.alphabet.equals(alphabet);
-//    }
-//
-//    public boolean equals(String startState, String alphabet) {
-//        return this.startState.equals(startState) && this.alphabet.equals(alphabet);
 //    }
 
     public static String toString(int[] t) {

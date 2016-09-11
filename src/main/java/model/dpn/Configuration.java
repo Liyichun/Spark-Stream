@@ -1,6 +1,6 @@
-package model.pds.simple;
+package model.dpn;
 
-import antlr.simple.PdsParser;
+import antlr.dpn.*;
 import util.Symbol;
 
 import java.io.Serializable;
@@ -10,12 +10,12 @@ import java.io.Serializable;
  */
 public class Configuration implements Serializable {
 
-    public static int[] fromAntlrContext(PdsParser.ConfContext confContext) {
+    public static int[] fromAntlrContext(DpnParser.ConfContext confContext) {
         String state = confContext.getChild(0).getText();
         int stateCode = Symbol.getCode(state);
 
-        PdsParser.StackContext stackContext = (PdsParser.StackContext) confContext.getChild(1);
-        PdsParser.Stack_contentContext stackElemContext = (PdsParser.Stack_contentContext) stackContext.getChild(1);
+        DpnParser.StackContext stackContext = (DpnParser.StackContext) confContext.getChild(1);
+        DpnParser.Stack_contentContext stackElemContext = (DpnParser.Stack_contentContext) stackContext.getChild(1);
 
         int stackCount = stackElemContext.getChildCount();
         int[] ret = new int[1 + stackCount];

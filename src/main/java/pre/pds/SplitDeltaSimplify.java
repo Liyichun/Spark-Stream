@@ -9,6 +9,7 @@ import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.broadcast.Broadcast;
 import model.pds.simple.*;
 import scala.Tuple2;
+import util.Symbol;
 import util.Util;
 
 import java.util.*;
@@ -39,7 +40,7 @@ public class SplitDeltaSimplify {
 
         SparkConf conf = new SparkConf().setAppName("SplitDelta2").setMaster("local[4]");
         JavaSparkContext sc = new JavaSparkContext(conf);
-        int finalState = Container.getCode("__s__");
+        int finalState = Symbol.getCode("__s__");
 
 //        container.printRuleSet(); // check
 
