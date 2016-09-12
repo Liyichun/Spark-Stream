@@ -9,6 +9,7 @@ import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.broadcast.Broadcast;
 import model.pds.simple.*;
 import util.Cantor;
+import util.SparkUtil;
 import util.Util;
 
 import java.util.*;
@@ -37,8 +38,7 @@ public class SplitDeltaSimplifyCantor {
 //        String inputFile = "test3";
         Container container = Container.parseInputFile("example/" + inputFile + ".pds");
 
-        SparkConf conf = new SparkConf().setAppName("SplitDeltaSimplifyCantor").setMaster("local[4]");
-        JavaSparkContext sc = new JavaSparkContext(conf);
+        JavaSparkContext sc = SparkUtil.getJavaSparkContext();
         int finalState = "__s__".hashCode();
 
 //        container.printRuleSet(); // check

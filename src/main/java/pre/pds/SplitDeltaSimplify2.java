@@ -10,6 +10,7 @@ import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.broadcast.Broadcast;
 import model.pds.simple.*;
 import scala.Tuple2;
+import util.SparkUtil;
 import util.Util;
 
 import java.util.*;
@@ -39,8 +40,7 @@ public class SplitDeltaSimplify2 {
 //        String inputFile = "test3";
         Container container = Container.parseInputFile("example/" + inputFile + ".pds");
 
-        SparkConf conf = new SparkConf().setAppName("SplitDelta2").setMaster("local[4]");
-        JavaSparkContext sc = new JavaSparkContext(conf);
+        JavaSparkContext sc = SparkUtil.getJavaSparkContext();
         int finalState = "__s__".hashCode();
 
 //        container.printRuleSet(); // check

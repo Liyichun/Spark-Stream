@@ -1,0 +1,29 @@
+#!/usr/bin/expect -f
+set ip 172.21.0.6
+set password spark
+set timeout 10
+
+set cdCmd "cd /home/test/Documents/pds"
+#set submitCmd "spark-submit --class \"pre.pds.SplitDeltaSimplify\" --master \"spark://ubuntu:7077\" PDS-RA-1.0-SNAPSHOT-fat.jar"
+
+set submitCmd "spark-submit --class \"example.Example1\" --master \"spark://ubuntu:7077\" PDS-RA-1.0-SNAPSHOT-fat.jar"
+
+
+
+
+spawn ssh test@$ip
+
+expect {
+    "*yes/no" { send "yes\r"; exp_continue}
+    "*password:" { send "$password\r" }
+}
+
+#**************execute teleCMD
+expect {
+    "]" { send "$cdCmd\r $submitCmd\r"}
+}
+#**************execute teleCMD
+
+
+interact
+

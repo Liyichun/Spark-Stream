@@ -1,0 +1,13 @@
+#!/usr/bin/expect -f
+set ip 172.21.0.6
+set password spark
+set timeout 10
+
+
+spawn scp target/PDS-RA-1.0-SNAPSHOT-fat.jar test@$ip:/home/test/Documents/pds
+expect {
+"*yes/no" { send "yes\r"; exp_continue}
+"*password:" { send "$password\r" }
+}
+interact
+

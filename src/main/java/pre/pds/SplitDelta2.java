@@ -4,8 +4,8 @@ import antlr.Container;
 import io.netty.util.internal.ConcurrentSet;
 import org.apache.spark.Accumulator;
 import org.apache.spark.api.java.*;
-import org.apache.spark.SparkConf;
 import org.apache.spark.broadcast.Broadcast;
+import util.SparkUtil;
 import util.Util;
 import model.pds.*;
 
@@ -28,8 +28,8 @@ public class SplitDelta2 {
         String inputFile = "paper";
         Container container = Util.parseInputFile("example/" + inputFile + ".pds");
 
-        SparkConf conf = new SparkConf().setAppName("SplitDelta2").setMaster("local[200]");
-        JavaSparkContext sc = new JavaSparkContext(conf);
+
+        JavaSparkContext sc = SparkUtil.getJavaSparkContext();
 
         JavaRDD<TransRule> delta = sc.parallelize(container.ruleSet);
 

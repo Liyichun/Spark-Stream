@@ -5,6 +5,7 @@ import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import scala.Tuple2;
+import util.SparkUtil;
 
 import java.util.Arrays;
 
@@ -15,8 +16,7 @@ public class WordCount {
 
     public static void main(String[] args) {
 
-        SparkConf conf = new SparkConf().setAppName("WordCount").setMaster("local[4]");
-        JavaSparkContext sc = new JavaSparkContext(conf);
+        JavaSparkContext sc = new JavaSparkContext(SparkUtil.getSparkConf());
 
         JavaRDD<String> textFile = sc.textFile("example/README.md");
         JavaRDD<Integer> lineLength = textFile.map(s -> s.length());

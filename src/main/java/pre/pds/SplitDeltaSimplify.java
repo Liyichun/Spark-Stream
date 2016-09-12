@@ -3,12 +3,12 @@ package pre.pds;
 import antlr.simple.*;
 import io.netty.util.internal.ConcurrentSet;
 import org.apache.spark.Accumulator;
-import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.broadcast.Broadcast;
 import model.pds.simple.*;
 import scala.Tuple2;
+import util.SparkUtil;
 import util.Symbol;
 import util.Util;
 
@@ -38,8 +38,8 @@ public class SplitDeltaSimplify {
 //        String inputFile = "test3";
         Container container = Container.parseInputFile("example/" + inputFile + ".pds");
 
-        SparkConf conf = new SparkConf().setAppName("SplitDelta2").setMaster("local[4]");
-        JavaSparkContext sc = new JavaSparkContext(conf);
+        JavaSparkContext sc = SparkUtil.getJavaSparkContext();
+        System.out.println("Master config: " + sc.master());
         int finalState = Symbol.getCode("__s__");
 
 //        container.printRuleSet(); // check
