@@ -124,7 +124,7 @@ public class SplitDeltaSimplifyCantor {
                     }
                 }
 //                System.out.println(TransRule.toString(transRule) + " ---> " + Container.transfer(flatMapRet).toString());
-                return flatMapRet;
+                return flatMapRet.iterator();
             });
             delta.count();
 //            System.out.println(delta.count());

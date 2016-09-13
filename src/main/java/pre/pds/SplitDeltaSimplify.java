@@ -21,6 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * 将Delta分散到RDD中, trans和rel放在广播变量中,
  * 在外层遍历Delat的RDD,在内层遍历trans的广播变量,将新的结果追加到trans中
  * 终止条件是trans的size不再增长
+ * trans使用bucket结构来存储，而不是简单的列表
  * 将所有的string都映射成int,并且抛弃了面向对象,使用最基础的array和tuple来保存数据
  */
 public class SplitDeltaSimplify {
@@ -125,7 +126,7 @@ public class SplitDeltaSimplify {
                     }
                 }
 //                System.out.println(TransRule.toString(transRule) + " ---> " + Container.transfer(flatMapRet).toString());
-                return flatMapRet;
+                return flatMapRet.iterator();
             });
             delta.count();
 //            System.out.println(delta.count());

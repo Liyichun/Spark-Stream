@@ -140,7 +140,7 @@ public class SplitDeltaSimplify2 {
                         }
                     }
                 }
-                return flatMapRet;
+                return flatMapRet.iterator();
             });
             deltaPair.count();
         }

@@ -61,7 +61,7 @@ public class TestRdd {
             System.out.println(tuple.toString());
             List<Tuple2<Tuple2, int[]>> ret = new ArrayList<>();
 
-            return ret;
+            return ret.iterator();
         });
 
 //        for (int i = 0; i < 5; i ++ ) {
