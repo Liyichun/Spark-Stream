@@ -51,7 +51,7 @@ And run the following command, which should also return 1000:
 ## Example Programs
 
 Spark also comes with several sample programs in the `examples` directory.
-To run one of them, use `./bin/run-example <class> [params]`. For example:
+To run one of them, use `./bin/run-test <class> [params]`. For example:
 
     ./bin/run-example SparkPi
 

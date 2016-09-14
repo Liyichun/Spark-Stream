@@ -24,7 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * trans使用bucket结构来存储，而不是简单的列表
  * 将所有的string都映射成int,并且抛弃了面向对象,使用最基础的array和tuple来保存数据
  */
-public class SplitDeltaSimplify {
+public class SplitDeltaSimplifyBucket {
 
     public static void main(String[] args) {
 
@@ -113,13 +113,13 @@ public class SplitDeltaSimplify {
                                             gamma2
                                     });
 
-                                    Tuple2<Integer, Integer> tempSig = new Tuple2(q_prime, gamma2);
-
-                                    if (bcTransBucket.getValue().containsKey(tempSig)) {
-                                        for (int q_prime2 : bcTransBucket.getValue().get(tempSig)) { // line 11
-                                            addTransition(bcTransBucket, bcExistFromStates, currSum, sig, q_prime2);
-                                        }
-                                    }
+//                                    Tuple2<Integer, Integer> tempSig = new Tuple2(q_prime, gamma2);
+//
+//                                    if (bcTransBucket.getValue().containsKey(tempSig)) {
+//                                        for (int q_prime2 : bcTransBucket.getValue().get(tempSig)) { // line 11
+//                                            addTransition(bcTransBucket, bcExistFromStates, currSum, sig, q_prime2);
+//                                        }
+//                                    }
                                 }
                             }
                         }

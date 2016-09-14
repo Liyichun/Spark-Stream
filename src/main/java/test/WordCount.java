@@ -1,15 +1,12 @@
-package example;
+package test;
 
-import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.api.java.function.FlatMapFunction;
 import scala.Tuple2;
 import util.SparkUtil;
 
 import java.util.Arrays;
-import java.util.Iterator;
 
 /**
  * Created by Cynric on 7/13/16.

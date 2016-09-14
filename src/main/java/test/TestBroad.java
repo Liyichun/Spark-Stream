@@ -1,4 +1,4 @@
-package example;
+package test;
 
 import com.esotericsoftware.kryo.util.Util;
 import org.apache.spark.SparkConf;
@@ -6,9 +6,7 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.broadcast.Broadcast;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Queue;
 
 /**

@@ -54,13 +54,6 @@ public class Util {
         System.out.println("VALUE: " + contentBuilder.toString());
     }
 
-    public static void logIndexSet(List<int[]> list) {
-        List<String> temp = antlr.simple.Container.transfer(list);
-        System.out.println("Size of Delta: " + list.size());
-        for (String s : temp) {
-            System.out.println(s);
-        }
-    }
 
     public static void logBucket(Map<Tuple2, Set<Integer>> collection) {
         List<String> list = antlr.simple.Container.transfer(collection);

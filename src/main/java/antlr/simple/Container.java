@@ -6,6 +6,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import model.pds.simple.TransRule;
 import model.pds.simple.Transition;
 import scala.Tuple2;
+import scala.Tuple3;
 import util.Cantor;
 
 import java.io.IOException;
@@ -46,10 +47,14 @@ public class Container {
         return container;
     }
 
-    public static List<String> transfer(Collection<int[]> collection) {
+    public static List<String> transfer(Collection<Tuple3<Integer, Integer, Integer>> collection) {
         List<String> ret = new ArrayList<>();
-        for (int[] t : collection) {
-            ret.add(TransRule.toString(t));
+        for (Tuple3 t : collection) {
+            int[] a = new int[3];
+            a[0] = (int) t._1();
+            a[1] = (int) t._2();
+            a[2] = (int) t._3();
+            ret.add(Transition.toString(a));
         }
         return ret;
     }
