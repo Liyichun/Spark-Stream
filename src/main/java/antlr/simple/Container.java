@@ -88,6 +88,29 @@ public class Container {
         return ret;
     }
 
+    public void printTransPair(List<Tuple2<Integer, Integer>> list) {
+        for (Tuple2<Integer, Integer> t : list) {
+            int sig = t._1;
+            int[] trans = new int[3];
+            System.arraycopy(Cantor.dePair(sig), 0, trans, 0, 2);
+            trans[2] = t._2;
+            System.out.println(Transition.toString(trans));
+        }
+    }
+
+    public void printDelta4List(List<Tuple2<Integer, Tuple2<Integer, Integer>>> delta) {
+        for (Tuple2<Integer, Tuple2<Integer, Integer>> rule : delta) {
+            int sig = rule._1;
+            Tuple2<Integer, Integer> tuple = rule._2;
+            int[] sigArray = Cantor.dePair(sig);
+            System.out.println(TransRule.toString(new int[]{tuple._1, tuple._2, sigArray[0], sigArray[1]}));
+        }
+    }
+
+    public List<int[]> getRuleSet() {
+        return ruleSet;
+    }
+
     public void printRuleSet() {
         System.out.println("------ START PRINT INPUT ------");
         for (int[] transRule : this.ruleSet) {

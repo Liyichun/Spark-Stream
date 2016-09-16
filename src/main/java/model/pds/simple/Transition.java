@@ -1,8 +1,12 @@
 package model.pds.simple;
 
+import scala.Tuple2;
+import util.Cantor;
 import util.Symbol;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Cynric on 5/24/16.
@@ -38,6 +42,22 @@ public class Transition implements Serializable {
                     startConf[i + 1],
                     toStateCode
             };
+            lastToStateCode = toStateCode;
+        }
+        return ret;
+    }
+
+    public static List<Tuple2<Integer, Integer>> getStartTransList(int[] startConf) {
+        List<Tuple2<Integer, Integer>> ret = new ArrayList<>();
+        int lastToStateCode = Symbol.getCode("__s__");
+
+        ret.add(new Tuple2<>(Cantor.codePair(startConf[0], startConf[1]), lastToStateCode));
+
+        for (int i = 1; i < startConf.length - 1; i++) {
+            String toState = "__s" + (i + 1) + "__";
+            int toStateCode = Symbol.getCode(toState);
+
+            ret.add(new Tuple2<>(Cantor.codePair(lastToStateCode, startConf[i + 1]), toStateCode));
             lastToStateCode = toStateCode;
         }
         return ret;

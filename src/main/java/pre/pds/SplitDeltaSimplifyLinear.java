@@ -34,8 +34,8 @@ public class SplitDeltaSimplifyLinear {
 //        String inputFile = "plot_2";
 //        String inputFile = "Mpds";
 //        String inputFile = "Mpds110_2";
-        String inputFile = "plot";
-//        String inputFile = "paper";
+//        String inputFile = "plot";
+        String inputFile = "paper";
 //        String inputFile = "test";
 //        String inputFile = "test1";
 //        String inputFile = "test2";

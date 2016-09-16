@@ -55,13 +55,6 @@ public class Util {
     }
 
 
-    public static void logBucket(Map<Tuple2, Set<Integer>> collection) {
-        List<String> list = antlr.simple.Container.transfer(collection);
-        System.out.println("Size of Bucket: " + list.size());
-        for (String s : list) {
-            System.out.println(s);
-        }
-    }
 
     public static <T> void dumpToFile(String filename, Collection<T> iter) {
         BufferedWriter bw = null;
