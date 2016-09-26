@@ -15,13 +15,17 @@ import util.Symbol;
 import util.Util;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 
 /**
  * Created by Cynric on 9/15/16.
  */
 public class PdsAnalyzer {
+
+    private Set<Integer> Q_prime = new HashSet<>();
 
     public static void main(String[] args) {
         JavaSparkContext sc = new JavaSparkContext(SparkUtil.getSparkConf());
@@ -218,5 +222,29 @@ public class PdsAnalyzer {
         relPair = relPair.union(transPair);
         System.out.println("Trans size: " + relPair.values().count());
         container.printTransPair(relPair.collect());
+    }
+
+
+    public void computePostStar(JavaSparkContext sc, Container container) {
+        List<int[]> allRuleSet = container.getRuleSet();
+        List<int[]> emptyRuleSet = new ArrayList<>();
+        List<int[]> ruleSet4 = new ArrayList<>();
+        List<int[]> ruleSet5 = new ArrayList<>();
+
+
+
+        for (int[] rule : allRuleSet) {
+            if (rule.length == 3) {
+                emptyRuleSet.add(rule);
+            } else if (rule.length == 4) {
+                ruleSet4.add(rule);
+            } else if (rule.length == 5) {
+                ruleSet5.add(rule);
+            }
+        }
+
+
+
+
     }
 }
