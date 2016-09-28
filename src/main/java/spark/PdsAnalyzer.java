@@ -226,25 +226,174 @@ public class PdsAnalyzer {
 
 
     public void computePostStar(JavaSparkContext sc, Container container) {
+        int[] startConfg = container.startConf;
+        List<Tuple2<Integer, Integer>> startTrans = Transition.getStartTransList(startConfg);
+
         List<int[]> allRuleSet = container.getRuleSet();
         List<int[]> emptyRuleSet = new ArrayList<>();
         List<int[]> ruleSet4 = new ArrayList<>();
         List<int[]> ruleSet5 = new ArrayList<>();
 
 
-
         for (int[] rule : allRuleSet) {
+            Q_prime.add(rule[0]);
+            Q_prime.add(rule[2]);
             if (rule.length == 3) {
                 emptyRuleSet.add(rule);
             } else if (rule.length == 4) {
                 ruleSet4.add(rule);
             } else if (rule.length == 5) {
+                int combinedState = Symbol.getCodeForPostState(rule[2], rule[3]);
+                Q_prime.add(combinedState);
                 ruleSet5.add(rule);
             }
         }
 
 
+        JavaPairRDD<Integer, Integer> deltaPair3 =
+                sc.parallelize(emptyRuleSet).mapToPair(rule -> {
+                    int sig = Cantor.codePair(rule[0], rule[1]);
+                    return new Tuple2<>(sig, rule[2]);
+                });
 
+        JavaPairRDD<Integer, Tuple2<Integer, Integer>> deltaPair4 =
+                sc.parallelize(ruleSet4).mapToPair(rule -> {
+                    int sig = Cantor.codePair(rule[0], rule[1]);
+                    Tuple2<Integer, Integer> tuple = new Tuple2<>(rule[2], rule[3]);
+                    return new Tuple2<>(sig, tuple);
+                });
+
+        JavaPairRDD<Integer, Tuple3<Integer, Integer, Integer>> deltaPair5 =
+                sc.parallelize(ruleSet5).mapToPair(rule -> {
+                    int sig = Cantor.codePair(rule[0], rule[1]);
+                    Tuple3<Integer, Integer, Integer> tuple = new Tuple3<>(rule[2], rule[3], rule[4]);
+                    return new Tuple2<>(sig, tuple);
+                });
+
+
+        JavaPairRDD<Integer, Integer> transPair = sc.parallelizePairs(startTrans); // sig([0], [1]) as key, [2] as value.
+
+        JavaPairRDD<Integer, Integer> emptyTransPair = sc.parallelizePairs(startTrans); // [2] as key, [0] as value
+
+        JavaPairRDD<Integer, Tuple2<Integer, Integer>> relPair =
+                sc.parallelizePairs(new ArrayList<Tuple2<Integer, Tuple2<Integer, Integer>>>()); // [0] as key, tuple<[1], [2]> as value
+        JavaPairRDD<Integer, Integer> emptyRelPair =
+                sc.parallelizePairs(new ArrayList<Tuple2<Integer, Integer>>()); // [2] as key, [0] as value
+
+
+        while (true) {
+            JavaPairRDD<Integer, Tuple2<Integer, Integer>> joinResult3 = deltaPair3.join(transPair);
+
+            // 找出匹配上的transition,把它们从trans集合里除去
+            JavaPairRDD<Integer, Integer> matchedTrans3 = joinResult3.mapToPair(tuple -> {
+                int sig = tuple._1;
+                int toState = tuple._2._2;
+                return new Tuple2<>(sig, toState);
+            }); // TODO distinct
+
+            JavaPairRDD<Integer, Tuple2<Integer, Integer>> newRel3 = joinResult3.mapToPair(
+                    tuple -> {
+                        int sig = tuple._1;
+                        int[] from = Cantor.dePair(sig);
+                        return new Tuple2<>(
+                                from[0],
+                                new Tuple2<>(from[1], tuple._2._2)
+                        );
+                    }
+            );
+
+
+            JavaPairRDD<Integer, Integer> newTrans3 = joinResult3.values().mapToPair(
+                    tuple -> {
+                        return new Tuple2<>(tuple._2, tuple._1); // emptyTransPair uses [2] as key, [0] as val
+                    }
+            );
+
+
+            emptyTransPair = emptyTransPair.union(newTrans3);
+            transPair = transPair.subtract(matchedTrans3);
+            relPair = relPair.union(newRel3);
+
+
+            JavaPairRDD<Integer, Tuple2<Tuple2<Integer, Integer>, Integer>> joinResult4 =
+                    deltaPair4.join(transPair);
+
+            // 找出匹配上的transition,把它们从trans集合里除去
+            JavaPairRDD<Integer, Integer> matchedTrans4 = joinResult4.mapToPair(tuple -> {
+                int sig = tuple._1;
+                int toState = tuple._2._2;
+                return new Tuple2<>(sig, toState);
+            }); // TODO distinct
+
+            JavaPairRDD<Integer, Tuple2<Integer, Integer>> newRel4 = joinResult4.mapToPair(
+                    tuple -> {
+                        int sig = tuple._1;
+                        int[] from = Cantor.dePair(sig);
+                        return new Tuple2<>(
+                                from[0],
+                                new Tuple2<>(from[1], tuple._2._2)
+                        );
+                    }
+            );
+
+
+            JavaPairRDD<Integer, Integer> newTrans4 = joinResult4.values().mapToPair(
+                    tuple -> {
+                        Tuple2<Integer, Integer> rule = tuple._1;
+                        return getTransTuple(rule._1, rule._2, tuple._2);
+                    }); // TODO distinct
+
+            transPair = transPair.union(newTrans4).subtract(matchedTrans4);
+            relPair = relPair.union(newRel4);
+
+
+
+            // 再处理长度为5的迁移
+            JavaPairRDD<Integer, Tuple2<Tuple3<Integer, Integer, Integer>, Integer>> joinResult5 = deltaPair5.join(transPair); // TODO distinct
+
+            // 找出匹配上的transition,把它们从trans集合里除去
+            JavaPairRDD<Integer, Integer> matchedTrans5 = joinResult5.mapToPair(tuple -> {
+                int sig = tuple._1;
+                int toState = tuple._2._2;
+                return new Tuple2<>(sig, toState);
+            }); // TODO distinct
+
+            JavaPairRDD<Integer, Integer> newTrans5 = joinResult5.values().mapToPair(tuple -> {
+                Tuple3<Integer, Integer, Integer> rule = tuple._1;
+                int combineState = Symbol.getCodeForPostState(rule._1(), rule._2());
+                return getTransTuple(rule._1(), rule._2(), combineState);
+            });
+
+            JavaPairRDD<Integer, Integer> newRel5 = joinResult5.flatMapToPair(tuple -> {
+
+
+                int sig = tuple._1;
+                int[] from = Cantor.dePair(sig);
+                return new Tuple2<>(
+                        from[0],
+                        new Tuple2<>(from[1], tuple._2._2)
+                );
+
+                Tuple3<Integer, Integer, Integer> rule = tuple._1;
+                int combineState = Symbol.getCodeForPostState(rule._1(), rule._2());
+                return (rule._1(), rule._2(), combineState);
+            });
+
+
+            JavaPairRDD<Integer, Tuple2<Integer, Integer>> newDeltaPair = joinResult5.values().mapToPair(tuple -> {
+                Tuple3<Integer, Integer, Integer> rule = tuple._1;
+                int toState = tuple._2;
+                int sig = Cantor.codePair(toState, rule._3());
+                return new Tuple2<>(sig, new Tuple2<>(rule._1(), rule._2()));
+            }); // TODO distinct
+
+            JavaPairRDD<Integer, Integer> newTrans2 = newDeltaPair.join(relPair).values().mapToPair(tuple -> {
+                Tuple2<Integer, Integer> rule = tuple._1;
+                return getTransTuple(rule._1, rule._2, tuple._2);
+            }); // TODO distinct
+
+
+        }
 
     }
 }
