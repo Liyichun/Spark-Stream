@@ -280,6 +280,8 @@ public class PdsAnalyzer {
         JavaPairRDD<Integer, Integer> emptyRelPair =
                 sc.parallelizePairs(new ArrayList<Tuple2<Integer, Integer>>()); // [2] as key, [0] as value
 
+        long count = 0;
+        int turns = 0;
 
         while (true) {
             JavaPairRDD<Integer, Tuple2<Integer, Integer>> joinResult3 = deltaPair3.join(transPair);
@@ -347,7 +349,6 @@ public class PdsAnalyzer {
             relPair = relPair.union(newRel4);
 
 
-
             // 再处理长度为5的迁移
             JavaPairRDD<Integer, Tuple2<Tuple3<Integer, Integer, Integer>, Integer>> joinResult5 = deltaPair5.join(transPair); // TODO distinct
 
@@ -364,34 +365,65 @@ public class PdsAnalyzer {
                 return getTransTuple(rule._1(), rule._2(), combineState);
             });
 
-            JavaPairRDD<Integer, Integer> newRel5 = joinResult5.flatMapToPair(tuple -> {
-
-
+            JavaPairRDD<Integer, Tuple2<Integer, Integer>> newRel5 = joinResult5.flatMapToPair(tuple -> {
+                List<Tuple2<Integer, Tuple2<Integer, Integer>>> ret = new ArrayList<>();
                 int sig = tuple._1;
                 int[] from = Cantor.dePair(sig);
-                return new Tuple2<>(
+                int toState = tuple._2._2;
+                ret.add(new Tuple2<>(
                         from[0],
-                        new Tuple2<>(from[1], tuple._2._2)
-                );
+                        new Tuple2<>(from[1], toState)
+                ));
 
-                Tuple3<Integer, Integer, Integer> rule = tuple._1;
+                Tuple3<Integer, Integer, Integer> rule = tuple._2._1;
                 int combineState = Symbol.getCodeForPostState(rule._1(), rule._2());
-                return (rule._1(), rule._2(), combineState);
+                ret.add(new Tuple2<>(
+                        combineState,
+                        new Tuple2<>(rule._3(), toState)
+                ));
+
+                return ret.listIterator();
+            });
+
+            JavaPairRDD<Integer, Integer> newInnerTrans = newRel5.join(emptyRelPair).values().mapToPair(tuple -> {
+                return getTransTuple(tuple._2, tuple._1._1, tuple._1._2);
             });
 
 
-            JavaPairRDD<Integer, Tuple2<Integer, Integer>> newDeltaPair = joinResult5.values().mapToPair(tuple -> {
-                Tuple3<Integer, Integer, Integer> rule = tuple._1;
-                int toState = tuple._2;
-                int sig = Cantor.codePair(toState, rule._3());
-                return new Tuple2<>(sig, new Tuple2<>(rule._1(), rule._2()));
+            transPair = transPair.union(newTrans5).union(newInnerTrans).subtract(matchedTrans5);
+            relPair = relPair.union(newRel5);
+
+
+            // <q, <p, <r', q'>>>
+            JavaPairRDD<Integer, Tuple2<Integer, Tuple2<Integer, Integer>>> emptyJoinResult =
+                    emptyTransPair.join(relPair);
+
+
+            JavaPairRDD<Integer, Integer> matchedEmptyTrans = emptyJoinResult.mapToPair(tuple -> {
+                int q = tuple._1;
+                int p = tuple._2._1;
+                return new Tuple2<>(q, p);
             }); // TODO distinct
 
-            JavaPairRDD<Integer, Integer> newTrans2 = newDeltaPair.join(relPair).values().mapToPair(tuple -> {
-                Tuple2<Integer, Integer> rule = tuple._1;
-                return getTransTuple(rule._1, rule._2, tuple._2);
-            }); // TODO distinct
+            JavaPairRDD<Integer, Integer> newEmptyTrans = emptyJoinResult.values().mapToPair(tuple -> {
+                return getTransTuple(tuple._1, tuple._2._1, tuple._2._2);
+            });
 
+            emptyTransPair = emptyTransPair.subtract(matchedEmptyTrans);
+            emptyRelPair = emptyRelPair.union(matchedEmptyTrans);
+            transPair = transPair.union(newEmptyTrans);
+
+            count = newTrans3.count() + newTrans4.count() + newTrans5.count() + newInnerTrans.count();
+
+            if (count == 0) {
+                turns += 1;
+            } else {
+                turns = 0;
+            }
+
+            if (transPair.count() == 0 || turns == 2) { // 连续两轮没有找到新的trans，就终止
+                break;
+            }
 
         }
 
