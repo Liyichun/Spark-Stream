@@ -3,9 +3,7 @@ package spark;
 import antlr.simple.Container;
 import model.pds.simple.Transition;
 import org.apache.spark.api.java.JavaPairRDD;
-import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.api.java.function.PairFunction;
 import org.apache.spark.util.LongAccumulator;
 import scala.Tuple2;
 import scala.Tuple3;
@@ -23,7 +21,7 @@ import java.util.Set;
 /**
  * Created by Cynric on 9/15/16.
  */
-public class PdsAnalyzer {
+public class PdsAnalyzer2 {
 
     private Set<Integer> Q_prime = new HashSet<>();
 
@@ -37,7 +35,7 @@ public class PdsAnalyzer {
         }
         Container container = Container.parseInputFile("example/" + inputFile + ".pds");
 
-        PdsAnalyzer pdsPre = new PdsAnalyzer();
+        PdsAnalyzer2 pdsPre = new PdsAnalyzer2();
         pdsPre.computePreStar(sc, container);
 
     }
@@ -50,6 +48,12 @@ public class PdsAnalyzer {
         return new Tuple2<>(Cantor.codePair(x, y), z);
     }
 
+
+    /**
+     * 使用broadcast实现的 map-side join来尝试优化性能
+     * @param sc
+     * @param container
+     */
     public void computePreStar(JavaSparkContext sc, Container container) {
 
         int[] startConfg = container.startConf;
