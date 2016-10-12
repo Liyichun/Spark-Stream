@@ -1,4 +1,4 @@
-package spark;
+package analyzer.parallel;
 
 import antlr.simple.Container;
 import model.pds.simple.Transition;

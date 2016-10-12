@@ -1,11 +1,10 @@
-package spark;
+package analyzer.parallel;
 
+import analyzer.PdsAnalyzer;
 import antlr.simple.Container;
 import model.pds.simple.Transition;
 import org.apache.spark.api.java.JavaPairRDD;
-import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.api.java.function.PairFunction;
 import org.apache.spark.util.LongAccumulator;
 import scala.Tuple2;
 import scala.Tuple3;
@@ -19,11 +18,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static analyzer.parallel.PdsAnalyzer2.getTransTuple;
+
 
 /**
  * Created by Cynric on 9/15/16.
  */
-public class PdsAnalyzer {
+public class ParallelPdsAnalyzer extends PdsAnalyzer {
 
     private Set<Integer> Q_prime = new HashSet<>();
 
@@ -37,17 +38,9 @@ public class PdsAnalyzer {
         }
         Container container = Container.parseInputFile("example/" + inputFile + ".pds");
 
-        PdsAnalyzer pdsPre = new PdsAnalyzer();
+        ParallelPdsAnalyzer pdsPre = new ParallelPdsAnalyzer();
         pdsPre.computePreStar(sc, container);
 
-    }
-
-    public static Tuple2<Integer, Integer> getTransTuple(int[] trans) {
-        return new Tuple2<>(Cantor.codePair(trans[0], trans[1]), trans[2]);
-    }
-
-    public static Tuple2<Integer, Integer> getTransTuple(int x, int y, int z) {
-        return new Tuple2<>(Cantor.codePair(x, y), z);
     }
 
     public void computePreStar(JavaSparkContext sc, Container container) {
