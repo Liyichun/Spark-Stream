@@ -1,6 +1,7 @@
 package model.pds.simple;
 
 import scala.Tuple2;
+import scala.Tuple3;
 import util.Cantor;
 import util.Symbol;
 
@@ -63,6 +64,22 @@ public class Transition implements Serializable {
         return ret;
     }
 
+    public static List<Tuple3<Integer, Integer, Integer>> getStartTransList(int[] startConf, boolean cantor) {
+        List<Tuple3<Integer, Integer, Integer>> ret = new ArrayList<>();
+        int lastToStateCode = Symbol.getCode("__s1__");
+
+        ret.add(new Tuple3<>(startConf[0], startConf[1], lastToStateCode));
+
+        for (int i = 1; i < startConf.length - 1; i++) {
+            String toState = "__s" + (i + 1) + "__";
+            int toStateCode = Symbol.getCode(toState);
+
+            ret.add(new Tuple3<>(lastToStateCode, startConf[i + 1], toStateCode));
+            lastToStateCode = toStateCode;
+        }
+        return ret;
+    }
+
 //    @Override
 //    public boolean equals(Object obj) {
 //        if (obj == null || obj.getClass() != this.getClass()) {
@@ -92,5 +109,9 @@ public class Transition implements Serializable {
 
     public static String toString(int[] t) {
         return String.format("%s -[%s]-> %s", Symbol.getString(t[0]), Symbol.getString(t[1]), Symbol.getString(t[2]));
+    }
+
+    public static String toString(Tuple3<Integer, Integer, Integer> t) {
+        return String.format("%s -[%s]-> %s", Symbol.getString(t._1()), Symbol.getString(t._2()), Symbol.getString(t._3()));
     }
 }
