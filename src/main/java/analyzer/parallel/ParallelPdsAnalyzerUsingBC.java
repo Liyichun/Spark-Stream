@@ -1,5 +1,6 @@
 package analyzer.parallel;
 
+import analyzer.PdsAnalyzer;
 import antlr.simple.Container;
 import model.pds.simple.Transition;
 import org.apache.spark.api.java.JavaPairRDD;
@@ -21,7 +22,7 @@ import java.util.Set;
 /**
  * Created by Cynric on 9/15/16.
  */
-public class PdsAnalyzer2 {
+public class ParallelPdsAnalyzerUsingBC extends PdsAnalyzer{
 
     private Set<Integer> Q_prime = new HashSet<>();
 
@@ -35,17 +36,9 @@ public class PdsAnalyzer2 {
         }
         Container container = Container.parseInputFile("example/" + inputFile + ".pds");
 
-        PdsAnalyzer2 pdsPre = new PdsAnalyzer2();
+        ParallelPdsAnalyzerUsingBC pdsPre = new ParallelPdsAnalyzerUsingBC();
         pdsPre.computePreStar(sc, container);
 
-    }
-
-    public static Tuple2<Integer, Integer> getTransTuple(int[] trans) {
-        return new Tuple2<>(Cantor.codePair(trans[0], trans[1]), trans[2]);
-    }
-
-    public static Tuple2<Integer, Integer> getTransTuple(int x, int y, int z) {
-        return new Tuple2<>(Cantor.codePair(x, y), z);
     }
 
 

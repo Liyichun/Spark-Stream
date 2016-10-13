@@ -3,14 +3,11 @@ package analyzer.serial;
 import analyzer.PdsAnalyzer;
 import antlr.simple.Container;
 import model.pds.simple.Transition;
-import org.omg.CORBA.INTERNAL;
-import scala.Tuple2;
 import scala.Tuple3;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentLinkedDeque;
 
-import static analyzer.parallel.PdsAnalyzer2.getTransTuple;
+import static analyzer.parallel.ParallelPdsAnalyzerUsingBC.getTransTuple;
 
 /**
  * Created by Cynric on 12/10/2016.
@@ -35,6 +32,7 @@ public class SerialPdsAnalyzer extends PdsAnalyzer {
         trans.addAll(startTrans);
         Set<Tuple3<Integer, Integer, Integer>> rel = new HashSet<>();
 
+        Date startDate = new Date();
         while (true) {
             Tuple3<Integer, Integer, Integer> t = trans.poll();
             if (t == null) {
@@ -75,11 +73,11 @@ public class SerialPdsAnalyzer extends PdsAnalyzer {
 
             }
         }
-
+        Date endDate = new Date();
 
         System.out.println(rel.size());
         printTranSet(rel);
 
-
+        System.out.println(endDate.getTime() - startDate.getTime());
     }
 }
