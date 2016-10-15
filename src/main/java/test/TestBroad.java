@@ -34,14 +34,14 @@ public class TestBroad {
             }
             bc.getValue().poll();
             bc.getValue().poll();
-//            bc.getValue().add(1);
+            bc.getValue().add(1);
+            numbers.map(i -> {
+                System.out.println(bc.getValue().size());
+                return i;
+            });
             Util.log("Size in iteration", bc.getValue().size());
         }
-//
-//        while (!bc.getValue().isEmpty()) {
-//            // 可以同时增减
-//
-//        }
+
         Util.log("Size after iteration", bc.getValue().size());
     }
 }

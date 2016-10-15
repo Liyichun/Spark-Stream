@@ -7,7 +7,6 @@ import scala.Tuple3;
 
 import java.util.*;
 
-import static analyzer.parallel.ParallelPdsAnalyzerUsingBC.getTransTuple;
 
 /**
  * Created by Cynric on 12/10/2016.

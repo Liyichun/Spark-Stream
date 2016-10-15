@@ -10,14 +10,13 @@ import util.SparkUtil;
 
 import java.util.*;
 
-import static com.sun.tools.javac.jvm.ByteCodes.ret;
 
 /**
  * Created by Cynric on 9/14/16.
  */
 public class TestJoin {
     static JavaSparkContext sc = new JavaSparkContext(SparkUtil.getSparkConf());
-    int iterNum = 100;
+    int iterNum = 1;
 
     public static void main(String[] args) {
 
@@ -48,10 +47,9 @@ public class TestJoin {
         });
 
 
-
         TestJoin testJoin = new TestJoin();
         testJoin.testMapSideJoin(deltaPair, transPair);
-        testJoin.testReduceSideJoin(deltaPair, transPair);
+//        testJoin.testReduceSideJoin(deltaPair, transPair);
 
     }
 
@@ -190,7 +188,41 @@ public class TestJoin {
                         return ret.iterator();
                     });
 
+
+            JavaPairRDD<Integer, Set<Integer>> combineRes =
+                    newTransPair.combineByKey(
+                            (Integer a) -> {
+                                Set<Integer> ret = new HashSet<>();
+                                ret.add(a);
+                                return ret;
+                            },
+                            (Set<Integer> set, Integer a) -> {
+                                set.add(a);
+                                return set;
+                            },
+                            (set1, set2) -> {
+                                set1.addAll(set2);
+                                return set1;
+                            }
+                    );
+
             Map<Integer, Set<Integer>> m2 = transArraToMap(newTransPair.collect());
+            Map<Integer, Set<Integer>> m3 = combineRes.collectAsMap();
+
+            System.out.println("*********** m2 **************");
+            for (Set<Integer> s : m2.values()) {
+                for (Integer in : s) {
+                    System.out.println(in);
+                }
+            }
+
+            System.out.println("*********** m3 **************");
+            for (Set<Integer> s : m3.values()) {
+                for (Integer in : s) {
+                    System.out.println(in);
+                }
+            }
+
             for (Integer key : m2.keySet()) {
                 Map<Integer, Set<Integer>> map = trans_bc.getValue();
                 if (map.containsKey(key)) {

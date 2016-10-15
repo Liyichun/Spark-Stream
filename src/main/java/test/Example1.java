@@ -4,6 +4,8 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.broadcast.Broadcast;
 import org.apache.spark.util.CollectionAccumulator;
+import org.apache.spark.util.LongAccumulator;
+import scala.Tuple3;
 import util.SparkUtil;
 
 import java.util.ArrayList;
@@ -26,26 +28,39 @@ public class Example1 {
         JavaRDD<Integer> integers2 = sc.parallelize(Arrays.asList(1, 3, 5, 7));
         JavaRDD<String> strings = sc.parallelize(Arrays.asList("a b", "c d", "e f", "g h"));
 
+        List<int[]> l1 = new ArrayList<>();
+        l1.add(new int[]{1, 2, 3});
+        l1.add(new int[]{1, 2, 3});
+        System.out.println(sc.parallelize(l1).distinct().collect().size());
 
-        List<Integer> l = new ArrayList<>();
-        Broadcast<List<Integer>> broadcast = sc.broadcast(l);
+        List<Tuple3> l2 = new ArrayList<>();
+        l2.add(new Tuple3(1, 2, 3));
+        l2.add(new Tuple3(1, 2, 3));
+        System.out.println(sc.parallelize(l2).distinct().collect().size());
 
-        CollectionAccumulator<Integer> ac = sc.sc().collectionAccumulator();
 
-        for (int j = 0; j < 3; j++) {
-            integers.map(i -> {
-                System.out.println("i: " + i);
-                System.out.println("accumulator: " + ac.value());
-                System.out.println("broadcast: " + broadcast.value());
-                ac.add(i);
-                broadcast.getValue().add(i);
-                return i;
-            }).count();
-//            System.out.println(ac.value());
-        }
 
-        System.out.println("accumulator: " + ac.value());
-        System.out.println("broadcast: " + broadcast.value());
+
+//        List<Integer> l = new ArrayList<>();
+//        Broadcast<List<Integer>> broadcast = sc.broadcast(l);
+//
+//        LongAccumulator la = sc.sc().longAccumulator();
+//        CollectionAccumulator<Integer> ac = sc.sc().collectionAccumulator();
+//
+//        for (int j = 0; j < 3; j++) {
+//            integers.map(i -> {
+//                ac.add(i);
+//                la.add(2);
+//                broadcast.getValue().add(i);
+//                return i;
+//            }).count();
+////            System.out.println(ac.value());
+//        }
+//
+//        System.out.println("accumulator: " + la.value());
+//        System.out.println("accumulator: " + la.count());
+//        System.out.println("accumulator: " + la.sum());
+//        System.out.println("broadcast: " + broadcast.value());
 
 
 //        System.out.println("======map操作======");
