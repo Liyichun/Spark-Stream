@@ -37,7 +37,7 @@ object MoviesRecommond {
       + "users on " + ratingsTrain_KV.map(_._2.product).distinct().count() + "movies")
 
     //我的评分数据，RDD[Rating]格式
-    val myRatedData_Rating = sc.textFile(args(2)).map { lines =>
+    val myRatedData_Rating = sc.textFile(args(1) + "/test.dat").map { lines =>
       val fields = lines.split("::")
       Rating(fields(0).toInt, fields(1).toInt, fields(2).toDouble)
     }
