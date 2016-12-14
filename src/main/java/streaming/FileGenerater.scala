@@ -16,7 +16,7 @@ object FileGenerater {
       val filename = args(0)
       val lines = Source.fromFile(filename).getLines.toList
       val filerow = lines.length
-      val writer = new PrintWriter(new File("/Users/yichli/Documents/Program/PDS-RA/output/sparkstreamingtest"+i+".txt" ))
+      val writer = new PrintWriter(new File("/Users/liyichun/Documents/myself/Spark-Stream/output/sparkstreamingtest"+i+".txt" ))
       i=i+1
       var j=0
       while(j<i)
@@ -27,7 +27,7 @@ object FileGenerater {
       }
       writer.close()
       Thread sleep 5000
-      log(getNowTime(),"/Users/yichli/Documents/Program/PDS-RA/output/sparkstreamingtest"+i+".txt generated")
+      log(getNowTime(),"/Users/liyichun/Documents/myself/Spark-Stream/output/sparkstreamingtest"+i+".txt generated")
     }
   }
   def log(date: String, message: String)  = {
